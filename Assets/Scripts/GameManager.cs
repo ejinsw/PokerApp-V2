@@ -34,6 +34,8 @@ public class GameManager : MonoBehaviour {
 
     [SerializeField] private GameObject playerPrefab;
     [SerializeField] private Transform playersTransform;
+    [SerializeField] private GameObject cardPrefab;
+    [SerializeField] private Transform communityCardsTransform;
 
     [SerializeField] private int m_numPlayers = 2;
 
@@ -86,6 +88,14 @@ public class GameManager : MonoBehaviour {
         return cards;
     }
 
+    public void CreateCard(Suit suit, Rank rank, Transform hand, float scale = 1) {
+        GameObject cardObject = Instantiate(cardPrefab, hand);
+        CardComponent component = cardObject.GetComponent<CardComponent>();
+        component.SetSuit(suit); 
+        component.SetRank(rank); 
+        component.SetScale(scale);
+    }
+
     /// <summary>
     /// Creates a new Player instance, adds it to the player list,
     /// and initializes the corresponding PlayerComponent.
@@ -106,7 +116,9 @@ public class GameManager : MonoBehaviour {
 
         m_communityCards.Clear();
         m_communityCards = DeckTakeAmount(ref m_deck, Utilities.RandomInt(3, 5));
-        Utilities.PrintCards(m_communityCards);
+        foreach (Card c in m_communityCards) {
+            CreateCard(c.Suit, c.Rank, communityCardsTransform, 2);
+        }
 
         m_players.Clear();
         for (int i = 0; i < m_numPlayers; i++) {

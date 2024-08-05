@@ -9,6 +9,10 @@ public class CardComponent : MonoBehaviour {
     [SerializeField] private TMP_Text rank;
     [SerializeField] private Image suit;
 
+    public void SetScale(float f) {
+        transform.localScale = new Vector3(f, f, 1);
+    }
+    
     public void SetRank(Rank r) {
         rank.text = Utilities.rank_as_string[r];
     }
