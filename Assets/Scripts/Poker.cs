@@ -13,7 +13,6 @@ namespace Poker {
 
     public enum Rank {
         Ace,
-        One,
         Two,
         Three,
         Four,
@@ -51,10 +50,11 @@ namespace Poker {
     public class Player {
         private string _name;
         private List<Card> _cards;
-
-        public Player(string name, List<Card> cards) {
+        private double _money;
+        public Player(string name, List<Card> cards, double money) {
             Name = name;
             Cards = cards;
+            Money = money;
         }
 
         public string Name {
@@ -66,10 +66,15 @@ namespace Poker {
             private set => _cards = value;
         }
 
-        #region Debugging
+        public double Money {
+            get => _money;
+            set => _money = value;
+        }
 
-        public void PrintCards() {
-            string msg = Name;
+        #region Debugging
+        
+        public void PrintDetails() {
+            string msg = Name + " " + Money;
             foreach (Card c in Cards) {
                 msg += " " + Enum.GetName(typeof(Suit), c.Suit) + " " + Enum.GetName(typeof(Rank), c.Rank);
             }

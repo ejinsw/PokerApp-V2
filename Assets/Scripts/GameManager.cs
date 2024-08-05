@@ -2,10 +2,11 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using Poker;
+using UnityEditor.Tilemaps;
 using UnityEngine;
+using UnityEngine.UI;
 
-public class GameManager : MonoBehaviour
-{
+public class GameManager : MonoBehaviour {
     #region Singleton
 
     public static GameManager instance;
@@ -26,10 +27,18 @@ public class GameManager : MonoBehaviour
 
     #region Serialize Fields
 
+    [SerializeField] public Sprite IconClubs;
+    [SerializeField] public Sprite IconDiamonds;
+    [SerializeField] public Sprite IconHearts;
+    [SerializeField] public Sprite IconSpades;
+
+    [SerializeField] private GameObject playerPrefab;
+    [SerializeField] private Transform playersTransform;
+
     [SerializeField] private int m_numPlayers = 2;
 
     #endregion
-    
+
     #endregion
 
     #region Initialization
@@ -38,7 +47,7 @@ public class GameManager : MonoBehaviour
         Initialize();
     }
 
-    #region Initialization
+    #region Utility Methods
 
     private List<Card> ResetDeck() {
         List<Card> deck = new();
@@ -57,7 +66,7 @@ public class GameManager : MonoBehaviour
 
         cards.Add(deck[0]);
         deck.RemoveAt(0);
-        
+
         return cards;
     }
 
@@ -68,15 +77,40 @@ public class GameManager : MonoBehaviour
         return cards;
     }
 
+    private List<Card> DeckTakeAmount(ref List<Card> deck, int amount) {
+        List<Card> cards = new();
+        for (int i = 0; i < amount; i++) {
+            cards.AddRange(DeckTakeOne(ref deck));
+        }
+
+        return cards;
+    }
+
+    /// <summary>
+    /// Creates a new Player instance, adds it to the player list,
+    /// and initializes the corresponding PlayerComponent.
+    /// </summary>
+    private void CreatePlayer() {
+        Player p = new Player(Utilities.RandomName(), DeckTakeTwo(ref m_deck), Utilities.RandomDouble(0, 1000));
+        m_players.Add(p);
+        GameObject playerObject = Instantiate(playerPrefab, playersTransform);
+        PlayerComponent playerComponent = playerObject.GetComponent<PlayerComponent>();
+        playerComponent.Initialize(p);
+    }
+
     #endregion
+
     private void Initialize() {
         m_deck = ResetDeck();
         m_deck.Shuffle();
 
+        m_communityCards.Clear();
+        m_communityCards = DeckTakeAmount(ref m_deck, Utilities.RandomInt(3, 5));
+        Utilities.PrintCards(m_communityCards);
+
         m_players.Clear();
         for (int i = 0; i < m_numPlayers; i++) {
-            m_players.Add(new Player(i.ToString(), DeckTakeTwo(ref m_deck)));
-            m_players[i].PrintCards();
+            CreatePlayer();
         }
     }
 
