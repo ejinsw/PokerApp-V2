@@ -4,6 +4,7 @@ using Poker;
 using TMPro;
 using Unity.VisualScripting;
 using UnityEngine;
+using Random = Unity.Mathematics.Random;
 
 public class PlayerComponent : MonoBehaviour {
     public Player Player;
@@ -21,13 +22,36 @@ public class PlayerComponent : MonoBehaviour {
     }
 
     public IEnumerator DoTurn() {
+        List<Player> players = GameManager.instance.game.Players;
+        int round = GameManager.instance.game.Round;
+
         // TODO: Replace probability with folding frequency
-        if (Utilities.TrueWithProbability(0.5f)) {
+        if (Utilities.TrueWithProbability(0.3f)) {
             yield return StartCoroutine(Fold());
         }
         else {
-            if (Utilities.ContainsRaise(Player, GameManager.instance.game.Players, GameManager.instance.game.Round)) {
-                int choice = Utilities.RandomInt(1, 2);
+            Player highestRaiser = Utilities.HighestRaiser(Player, players, round);
+            if (Utilities.ContainsRaise(Player, players, round) && highestRaiser != Player) {
+                // Call or reraise
+                // TODO: Change the probability of calling vs reraising
+                if (Utilities.TrueWithProbability(0.5f)) {
+                    yield return StartCoroutine(Call(highestRaiser.ActionLog[round].Money));
+                }
+                else {
+                    // TODO: Change the bounds for reraising from just +100
+                    yield return StartCoroutine(Raise((float)Utilities.RandomDouble(highestRaiser.ActionLog[round].Money, highestRaiser.ActionLog[round].Money + 100)));
+                }
+            }
+            else {
+                // Check or raise
+                // TODO: Change the probability of checking vs raising
+                if (Utilities.TrueWithProbability(0.5f)) {
+                    yield return StartCoroutine(Check());
+                }
+                else {
+                    // TODO: Change the bounds for raising 
+                    yield return StartCoroutine(Raise((float)Utilities.RandomDouble(10, 100)));
+                }
             }
         }
 

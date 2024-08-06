@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Poker;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class GameManager : MonoBehaviour {
     #region Singleton
@@ -19,13 +20,14 @@ public class GameManager : MonoBehaviour {
     #region Members
 
     [HideInInspector] public Game game;
-    
+
     private Dictionary<Player, PlayerComponent> playerComponents = new();
 
     private bool userTurn = false;
-    
-    
-    
+
+    private ActionType userAction = ActionType.Null;
+
+
     #region Serialize Fields
 
     [SerializeField] public Sprite IconClubs;
@@ -43,6 +45,11 @@ public class GameManager : MonoBehaviour {
 
     [SerializeField] private int numPlayers = 3;
 
+    [SerializeField] private Button foldButton;
+    [SerializeField] private Button checkButton;
+    [SerializeField] private Button callButton;
+    [SerializeField] private Button raiseButton;
+
     #endregion
 
     #endregion
@@ -50,6 +57,14 @@ public class GameManager : MonoBehaviour {
     #region Initialization
 
     private void Start() {
+        ActivateButtons(false);
+
+        // Button callbacks
+        foldButton.onClick.AddListener((() => UserAction(ActionType.Fold)));
+        checkButton.onClick.AddListener((() => UserAction(ActionType.Check)));
+        callButton.onClick.AddListener((() => UserAction(ActionType.Call)));
+        raiseButton.onClick.AddListener((() => UserAction(ActionType.Raise)));
+
         Initialize(numPlayers);
     }
 
@@ -84,7 +99,7 @@ public class GameManager : MonoBehaviour {
     private void Initialize(int numPlayers) {
         // Initialize game
         game = new(numPlayers);
-        
+
         // Community Card Components
         foreach (Card c in game.CommunityCards) {
             CreateCard(c, cardHorizontalPrefab, communityCardsTransform, 1.4f);
@@ -115,42 +130,93 @@ public class GameManager : MonoBehaviour {
             if (p.Folded) continue;
 
             if (p == game.User) {
-                userTurn = true;
-                while (userTurn) {
-                    yield return null;
-                }
+                yield return StartCoroutine(UserTurn());
             }
             else {
-                yield return playerComponents[p].DoTurn();
+                yield return StartCoroutine(playerComponents[p].DoTurn());
             }
+
+            Debug.Log(p.Name + " " + Enum.GetName(typeof(ActionType), p.ActionLog[game.Round].ActionType) + ": " + p.ActionLog[game.Round].Money);
         }
 
+        game.Round++;
+
         yield return null;
+    }
+
+    private IEnumerator UserTurn() {
+        userTurn = true;
+        ActivateButtons(true);
+        while (userTurn) {
+            yield return null;
+        }
+
+        switch (userAction) {
+            case ActionType.Fold:
+                yield return StartCoroutine(Fold());
+                break;
+            case ActionType.Check:
+                yield return StartCoroutine(Check());
+                break;
+            case ActionType.Call:
+                yield return StartCoroutine(Call());
+                break;
+            case ActionType.Raise:
+                yield return StartCoroutine(Raise());
+                break;
+        }
+
+        ActivateButtons(false);
     }
 
     #endregion
 
     #region User Actions
 
-    public void Fold() {
+    private void ActivateButtons(bool activate) {
+        foldButton.gameObject.SetActive(false);
+        checkButton.gameObject.SetActive(false);
+        callButton.gameObject.SetActive(false);
+        raiseButton.gameObject.SetActive(false);
+        if (activate) {
+            if (Utilities.ContainsRaise(game.User, game.Players, game.Round)) {
+                // Fold, Call, Raise
+                foldButton.gameObject.SetActive(true);
+                callButton.gameObject.SetActive(true);
+                raiseButton.gameObject.SetActive(true);
+            }
+            else {
+                // Check, Raise
+                checkButton.gameObject.SetActive(true);
+                raiseButton.gameObject.SetActive(true);
+            }
+        }
+    }
+
+    public void UserAction(ActionType action) {
+        userAction = action;
+        userTurn = false;
+    }
+
+    public IEnumerator Fold() {
         game.User.ActionLog.Add(new PlayerAction(ActionType.Fold, 0));
         game.User.Folded = true;
-        userTurn = false;
+        yield return null;
     }
-    
-    public void Check() {
+
+    public IEnumerator Check() {
         game.User.ActionLog.Add(new PlayerAction(ActionType.Check, 0));
-        userTurn = false;
+        yield return null;
     }
 
-    public void Call() {
+    public IEnumerator Call() {
         game.User.ActionLog.Add(new PlayerAction(ActionType.Call, 0));
-        userTurn = false;
+        yield return null;
     }
 
-    public void Raise() {
+    public IEnumerator Raise() {
         game.User.ActionLog.Add(new PlayerAction(ActionType.Raise, 0));
-        userTurn = false;
+        yield return null;
     }
 
     #endregion

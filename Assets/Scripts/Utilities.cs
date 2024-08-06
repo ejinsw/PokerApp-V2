@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using Random = Unity.Mathematics.Random;
 
@@ -50,7 +51,7 @@ namespace Poker {
         }
 
         public static bool TrueWithProbability(double p) {
-            return rng.NextDouble() < p;
+            return rng.NextDouble(0, 1) < p;
         }
 
         public static void Shuffle<T>(this IList<T> list) {
@@ -123,41 +124,96 @@ namespace Poker {
         public static bool ContainsRaise(Player self, List<Player> players, int currentRound) {
             foreach (Player p in players) {
                 if (p == self) continue; // skip self
-                if (p.ActionLog[currentRound] == null) continue; // skip non-initialized
+                if (!PlayerWent(p, currentRound)) continue; // skip non-initialized
                 if (p.ActionLog[currentRound].ActionType == ActionType.Raise) return true;
             }
 
             return false;
         }
 
-        public static bool ContainsCheck(Player self, List<Player> players, int currentRound) {
+        public static Player HighestRaiser(Player self, List<Player> players, int currentRound) {
+            if (!ContainsRaise(self, players, currentRound)) return self;
+
+            Player highest = self;
+            
             foreach (Player p in players) {
-                if (p == self) continue; // skip self
-                if (p.ActionLog[currentRound] == null) continue; // skip non-initialized
-                if (p.ActionLog[currentRound].ActionType == ActionType.Check) return true;
+                if (!PlayerWent(p, currentRound)) continue; // skip non-initialized
+                if (p.ActionLog[currentRound].ActionType == ActionType.Raise 
+                    && !PlayerWent(highest, currentRound) 
+                    || p.ActionLog[currentRound].ActionType == ActionType.Raise 
+                    && p.ActionLog[currentRound].Money > highest.ActionLog[currentRound].Money) {
+                    highest = p;
+                }
+            }
+            
+            return highest;
+        }
+
+        public static bool PlayerWent(Player player, int round) {
+            return round < player.ActionLog.Count;
+        }
+
+        #region Bluff Cases
+
+        public enum BluffCase {
+            Pure,
+            FrontStraightOpen,
+            FrontStraightOne,
+            FlushDrawOne
+        }
+
+        public static BluffCase GetBluffCase(List<Card> hand, List<Card> board) {
+            List<Card> allCards = hand.Concat(board).ToList();
+
+            // Check for Flush Draw (One-ended)
+            if (IsFlushDrawOneEnded(allCards)) {
+                return BluffCase.FlushDrawOne;
+            }
+
+            // Check for Frontdoor Straight Draw (Open-ended)
+            if (IsFrontStraightDrawOpen(allCards)) {
+                return BluffCase.FrontStraightOpen;
+            }
+
+            // Check for Frontdoor Straight Draw (One-ended)
+            if (IsFrontStraightDrawOne(allCards)) {
+                return BluffCase.FrontStraightOne;
+            }
+
+            // Default to Pure Bluff if no other conditions are met
+            return BluffCase.Pure;
+        }
+
+        private static bool IsFlushDrawOneEnded(List<Card> cards) {
+            var suitGroups = cards.GroupBy(card => card.Suit)
+                .Where(group => group.Count() == 4);
+            return suitGroups.Any(); // True if there"s a four-card flush draw
+        }
+
+        private static bool IsFrontStraightDrawOpen(List<Card> cards) {
+            var ranks = cards.Select(card => card.Rank).Distinct().OrderBy(rank => rank).ToList();
+            for (int i = 0; i < ranks.Count - 3; i++) {
+                if (ranks[i] + 3 == ranks[i + 3] && ranks.Skip(i).Take(4).Distinct().Count() == 4) {
+                    return true;
+                }
             }
 
             return false;
         }
 
-        public static bool ContainsCall(Player self, List<Player> players, int currentRound) {
-            foreach (Player p in players) {
-                if (p == self) continue; // skip self
-                if (p.ActionLog[currentRound] == null) continue; // skip non-initialized
-                if (p.ActionLog[currentRound].ActionType == ActionType.Call) return true;
+        private static bool IsFrontStraightDrawOne(List<Card> cards) {
+            var ranks = cards.Select(card => card.Rank).Distinct().OrderBy(rank => rank).ToList();
+            for (int i = 0; i < ranks.Count - 2; i++) {
+                Debug.Log($"i is currently at {i} and the size of ranks is {ranks.Count}");
+                if ((ranks[i] + 2 == ranks[i + 2] && ranks.Skip(i).Take(3).Distinct().Count() == 3) ||
+                    (i < ranks.Count - 3 && (ranks[i] + 3 == ranks[i + 3] && ranks.Skip(i).Take(4).Distinct().Count() == 4 && ranks.Contains(ranks[i] + 2)))) {
+                    return true;
+                }
             }
 
             return false;
         }
 
-        public static bool ContainsFold(Player self, List<Player> players, int currentRound) {
-            foreach (Player p in players) {
-                if (p == self) continue; // skip self
-                if (p.ActionLog[currentRound] == null) continue; // skip non-initialized
-                if (p.ActionLog[currentRound].ActionType == ActionType.Fold) return true;
-            }
-
-            return false;
-        }
+        #endregion
     }
 }

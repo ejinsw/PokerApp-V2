@@ -57,6 +57,7 @@ namespace Poker {
     }
 
     public enum ActionType {
+        Null,
         Fold,
         Check,
         Call,
