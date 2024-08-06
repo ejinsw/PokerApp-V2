@@ -56,19 +56,46 @@ namespace Poker {
         }
     }
 
+    public enum ActionType {
+        Fold,
+        Check,
+        Call,
+        Raise
+    }
+    
+    public class PlayerAction {
+        private float _money;
+        private ActionType _actionType;
+
+        public PlayerAction(ActionType actionType, float money) {
+            ActionType = actionType;
+            Money = money;
+        }
+        
+        public float Money {
+            get => _money;
+            private set => _money = value;
+        }
+
+        public ActionType ActionType {
+            get => _actionType;
+            private set => _actionType = value;
+        }
+    }
+
     public class Player {
         private string _name;
         private List<Card> _cards;
         private double _money;
         private bool _folded;
-        private List<float> _ins;
+        private List<PlayerAction> _actionLog;
 
         public Player(string name, List<Card> cards, double money, bool folded = false) {
             Name = name;
             Cards = cards;
             Money = money;
             Folded = folded;
-            Ins = new();
+            ActionLog = new();
         }
 
         public string Name {
@@ -91,9 +118,9 @@ namespace Poker {
             set => _folded = value;
         }
 
-        public List<float> Ins {
-            get => _ins;
-            set => _ins = value;
+        public List<PlayerAction> ActionLog {
+            get => _actionLog;
+            set => _actionLog = value;
         }
 
         #region Debugging

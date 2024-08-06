@@ -7,8 +7,7 @@ namespace Poker {
     public static class Utilities {
         public static Random rng = new Random((uint)Guid.NewGuid().GetHashCode());
 
-        public static List<string> player_names = new List<string>
-        {
+        public static List<string> player_names = new List<string> {
             "David", "Tom", "Will", "Julie", "Wanda", "Winston", "Brook", "Thomas",
             "John", "Jane", "Alice", "Bob", "Charlie", "Michael", "Sarah", "Emily",
             "James", "Linda", "Daniel", "Laura", "Matthew", "Jessica", "Joshua", "Karen",
@@ -18,8 +17,7 @@ namespace Poker {
             "Frank", "Shirley"
         };
 
-        public static Dictionary<Rank, string> rank_as_string = new()
-        {
+        public static Dictionary<Rank, string> rank_as_string = new() {
             { Rank.Ace, "A" },
             { Rank.Two, "2" },
             { Rank.Three, "3" },
@@ -34,7 +32,7 @@ namespace Poker {
             { Rank.Queen, "Q" },
             { Rank.King, "K" }
         };
-        
+
         public static string RandomName() {
             return player_names[rng.NextInt(0, player_names.Count)];
         }
@@ -46,8 +44,13 @@ namespace Poker {
             num /= Math.Pow(10, cutoff);
             return num;
         }
+
         public static int RandomInt(int min, int max) {
             return rng.NextInt(min, max + 1);
+        }
+
+        public static bool TrueWithProbability(double p) {
+            return rng.NextDouble() < p;
         }
 
         public static void Shuffle<T>(this IList<T> list) {
@@ -60,15 +63,16 @@ namespace Poker {
                 list[n] = value;
             }
         }
+
         public static void PrintCards(List<Card> cards) {
             string msg = "";
             foreach (Card c in cards) {
                 msg += Enum.GetName(typeof(Suit), c.Suit) + " " + Enum.GetName(typeof(Rank), c.Rank) + " ";
             }
-            
+
             Debug.Log(msg);
         }
-        
+
         public static List<Card> NewDeck() {
             List<Card> deck = new();
             foreach (Suit s in Enum.GetValues(typeof(Suit))) {
@@ -102,18 +106,58 @@ namespace Poker {
             for (int i = 0; i < amount; i++) {
                 cards.AddRange(DeckTakeOne(ref deck));
             }
-            
+
             if (cards.Count < amount) {
                 Debug.LogWarning("Requested more cards than are available in the deck.");
             }
 
             return cards;
         }
-        
+
         public static void ShowCards(ref List<Card> cards) {
             foreach (Card c in cards) {
                 c.Visible = true;
             }
+        }
+
+        public static bool ContainsRaise(Player self, List<Player> players, int currentRound) {
+            foreach (Player p in players) {
+                if (p == self) continue; // skip self
+                if (p.ActionLog[currentRound] == null) continue; // skip non-initialized
+                if (p.ActionLog[currentRound].ActionType == ActionType.Raise) return true;
+            }
+
+            return false;
+        }
+
+        public static bool ContainsCheck(Player self, List<Player> players, int currentRound) {
+            foreach (Player p in players) {
+                if (p == self) continue; // skip self
+                if (p.ActionLog[currentRound] == null) continue; // skip non-initialized
+                if (p.ActionLog[currentRound].ActionType == ActionType.Check) return true;
+            }
+
+            return false;
+        }
+
+        public static bool ContainsCall(Player self, List<Player> players, int currentRound) {
+            foreach (Player p in players) {
+                if (p == self) continue; // skip self
+                if (p.ActionLog[currentRound] == null) continue; // skip non-initialized
+                if (p.ActionLog[currentRound].ActionType == ActionType.Call) return true;
+            }
+
+            return false;
+        }
+
+        public static bool ContainsFold(Player self, List<Player> players, int currentRound) {
+            foreach (Player p in players) {
+                if (p == self) continue; // skip self
+                if (p.ActionLog[currentRound] == null) continue; // skip non-initialized
+                if (p.ActionLog[currentRound].ActionType == ActionType.Fold) return true;
+            }
+
+            return false;
         }
     }
 }

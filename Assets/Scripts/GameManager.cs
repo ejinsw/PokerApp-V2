@@ -5,7 +5,7 @@ using System.Linq;
 using Poker;
 using UnityEngine;
 
-public partial class GameManager : MonoBehaviour {
+public class GameManager : MonoBehaviour {
     #region Singleton
 
     public static GameManager instance;
@@ -18,7 +18,7 @@ public partial class GameManager : MonoBehaviour {
 
     #region Members
 
-    private Game game;
+    [HideInInspector] public Game game;
     
     private Dictionary<Player, PlayerComponent> playerComponents = new();
 
@@ -133,19 +133,23 @@ public partial class GameManager : MonoBehaviour {
     #region User Actions
 
     public void Fold() {
+        game.User.ActionLog.Add(new PlayerAction(ActionType.Fold, 0));
         game.User.Folded = true;
         userTurn = false;
     }
     
     public void Check() {
+        game.User.ActionLog.Add(new PlayerAction(ActionType.Check, 0));
         userTurn = false;
     }
 
     public void Call() {
+        game.User.ActionLog.Add(new PlayerAction(ActionType.Call, 0));
         userTurn = false;
     }
 
     public void Raise() {
+        game.User.ActionLog.Add(new PlayerAction(ActionType.Raise, 0));
         userTurn = false;
     }
 
