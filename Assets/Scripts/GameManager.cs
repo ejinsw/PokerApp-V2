@@ -40,7 +40,8 @@ public class GameManager : MonoBehaviour {
     [SerializeField] private List<Transform> playersTransforms;
     [SerializeField] private Transform userTransform;
     
-    [SerializeField] private GameObject cardPrefab;
+    [SerializeField] public GameObject cardPrefab;
+    [SerializeField] private GameObject cardHorizontalPrefab;
     [SerializeField] private Transform communityCardsTransform;
 
     [SerializeField] private int m_numPlayers = 3;
@@ -100,8 +101,8 @@ public class GameManager : MonoBehaviour {
         }
     }
 
-    public void CreateCard(Card card, Transform hand, float scale = 1) {
-        GameObject cardObject = Instantiate(cardPrefab, hand);
+    public void CreateCard(Card card, GameObject prefab, Transform hand, float scale = 1) {
+        GameObject cardObject = Instantiate(prefab, hand);
         CardComponent component = cardObject.GetComponent<CardComponent>();
         component.Initialize(card);
         component.SetScale(scale);
@@ -110,10 +111,10 @@ public class GameManager : MonoBehaviour {
     /// <summary>
     /// Initializes a corresponding PlayerComponent for a Player instance.
     /// </summary>
-    private PlayerComponent CreatePlayer(Player p, Transform parent) {
+    private PlayerComponent CreatePlayer(Player p, Transform parent, float scale = 1) {
         GameObject playerObject = Instantiate(playerPrefab, parent);
         PlayerComponent playerComponent = playerObject.GetComponent<PlayerComponent>();
-        playerComponent.Initialize(p);
+        playerComponent.Initialize(p, scale);
 
         return playerComponent;
     }
@@ -131,12 +132,14 @@ public class GameManager : MonoBehaviour {
         ShowCards(ref m_communityCards);
 
         foreach (Card c in m_communityCards) {
-            CreateCard(c, communityCardsTransform, 2);
+            CreateCard(c,cardHorizontalPrefab, communityCardsTransform, 2);
         }
 
         m_players.Clear();
         // User
         User = new("You", DeckTakeTwo(ref m_deck), Utilities.RandomDouble(0, 1000));
+        List<Card> userCards = User.Cards;
+        ShowCards(ref userCards);
         m_players.Add(User);
 
         // Other Players
@@ -156,7 +159,7 @@ public class GameManager : MonoBehaviour {
         // Player Components
         foreach (Player p in m_players) {
             if (p == User) {
-                m_playerComponents.Add(p, CreatePlayer(p, userTransform));
+                m_playerComponents.Add(p, CreatePlayer(p, userTransform, 1.4f));
             }
             else {
                 m_playerComponents.Add(p, CreatePlayer(p, playersTransforms[index]));
