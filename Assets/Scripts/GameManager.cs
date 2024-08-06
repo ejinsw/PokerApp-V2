@@ -18,16 +18,14 @@ public partial class GameManager : MonoBehaviour {
 
     #region Members
 
-    private List<Card> m_deck = new();
+    private Game game;
+    
+    private Dictionary<Player, PlayerComponent> playerComponents = new();
 
-    private List<Card> m_communityCards = new();
-
-    private List<Player> m_players = new();
-    private Dictionary<Player, PlayerComponent> m_playerComponents = new();
-
-    private Player User;
     private bool userTurn = false;
-
+    
+    
+    
     #region Serialize Fields
 
     [SerializeField] public Sprite IconClubs;
@@ -43,7 +41,7 @@ public partial class GameManager : MonoBehaviour {
     [SerializeField] private GameObject cardHorizontalPrefab;
     [SerializeField] private Transform communityCardsTransform;
 
-    [SerializeField] private int m_numPlayers = 3;
+    [SerializeField] private int numPlayers = 3;
 
     #endregion
 
@@ -52,54 +50,14 @@ public partial class GameManager : MonoBehaviour {
     #region Initialization
 
     private void Start() {
-        Initialize();
+        Initialize(numPlayers);
     }
 
     #region Utility Methods
 
-    private List<Card> ResetDeck() {
-        List<Card> deck = new();
-        foreach (Suit s in Enum.GetValues(typeof(Suit))) {
-            foreach (Rank r in Enum.GetValues(typeof(Rank))) {
-                deck.Add(new Card(s, r));
-            }
-        }
-
-        return deck;
-    }
-
-    private List<Card> DeckTakeOne(ref List<Card> deck) {
-        List<Card> cards = new();
-        if (deck.Count == 0) return cards;
-
-        cards.Add(deck[0]);
-        deck.RemoveAt(0);
-
-        return cards;
-    }
-
-    private List<Card> DeckTakeTwo(ref List<Card> deck) {
-        List<Card> cards = new();
-        cards.AddRange(DeckTakeOne(ref deck));
-        cards.AddRange(DeckTakeOne(ref deck));
-        return cards;
-    }
-
-    private List<Card> DeckTakeAmount(ref List<Card> deck, int amount) {
-        List<Card> cards = new();
-        for (int i = 0; i < amount; i++) {
-            cards.AddRange(DeckTakeOne(ref deck));
-        }
-
-        return cards;
-    }
-
-    public void ShowCards(ref List<Card> cards) {
-        foreach (Card c in cards) {
-            c.Visible = true;
-        }
-    }
-
+    /// <summary>
+    /// Initializes a corresponding CardComponent for a Card instance.
+    /// </summary>
     public void CreateCard(Card card, GameObject prefab, Transform hand, float scale = 1) {
         GameObject cardObject = Instantiate(prefab, hand);
         CardComponent component = cardObject.GetComponent<CardComponent>();
@@ -120,48 +78,26 @@ public partial class GameManager : MonoBehaviour {
 
     #endregion
 
-    private void Initialize() {
-        // Deck
-        m_deck = ResetDeck();
-        m_deck.Shuffle();
-
-        // Community Cards
-        m_communityCards.Clear();
-        m_communityCards = DeckTakeAmount(ref m_deck, Utilities.RandomInt(3, 5));
-        ShowCards(ref m_communityCards);
-
-        foreach (Card c in m_communityCards) {
+    /// <summary>
+    /// Initializes the game & components with a given player count.
+    /// </summary>
+    private void Initialize(int numPlayers) {
+        // Initialize game
+        game = new(numPlayers);
+        
+        // Community Card Components
+        foreach (Card c in game.CommunityCards) {
             CreateCard(c, cardHorizontalPrefab, communityCardsTransform, 1.4f);
         }
 
-        m_players.Clear();
-        // User
-        User = new("You", DeckTakeTwo(ref m_deck), Utilities.RandomDouble(0, 1000));
-        List<Card> userCards = User.Cards;
-        ShowCards(ref userCards);
-        m_players.Add(User);
-
-        // Other Players
-        for (int i = 0; i < m_numPlayers; i++) {
-            string name = Utilities.RandomName();
-            while (m_players.Any(p => p.Name == name)) {
-                name = Utilities.RandomName();
-            }
-
-            Player p = new Player(name, DeckTakeTwo(ref m_deck), Utilities.RandomDouble(0, 1000));
-            m_players.Add(p);
-        }
-
-        m_players.Shuffle();
-
-        int index = 0;
         // Player Components
-        foreach (Player p in m_players) {
-            if (p == User) {
-                m_playerComponents.Add(p, CreatePlayer(p, userTransform, 1.4f));
+        int index = 0;
+        foreach (Player p in game.Players) {
+            if (p == game.User) {
+                playerComponents.Add(p, CreatePlayer(p, userTransform, 1.4f));
             }
             else {
-                m_playerComponents.Add(p, CreatePlayer(p, playersTransforms[index]));
+                playerComponents.Add(p, CreatePlayer(p, playersTransforms[index]));
                 index++;
             }
         }
@@ -175,17 +111,17 @@ public partial class GameManager : MonoBehaviour {
     #region Game Cycle
 
     private IEnumerator GameStart() {
-        foreach (Player p in m_players) {
+        foreach (Player p in game.Players) {
             if (p.Folded) continue;
 
-            if (p == User) {
+            if (p == game.User) {
                 userTurn = true;
                 while (userTurn) {
                     yield return null;
                 }
             }
             else {
-                yield return m_playerComponents[p].DoTurn();
+                yield return playerComponents[p].DoTurn();
             }
         }
 
@@ -194,10 +130,10 @@ public partial class GameManager : MonoBehaviour {
 
     #endregion
 
-    #region User
+    #region User Actions
 
     public void Fold() {
-        User.Folded = true;
+        game.User.Folded = true;
         userTurn = false;
     }
     

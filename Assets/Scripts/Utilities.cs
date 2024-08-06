@@ -68,5 +68,52 @@ namespace Poker {
             
             Debug.Log(msg);
         }
+        
+        public static List<Card> NewDeck() {
+            List<Card> deck = new();
+            foreach (Suit s in Enum.GetValues(typeof(Suit))) {
+                foreach (Rank r in Enum.GetValues(typeof(Rank))) {
+                    deck.Add(new Card(s, r));
+                }
+            }
+
+            return deck;
+        }
+
+        public static List<Card> DeckTakeOne(ref List<Card> deck) {
+            List<Card> cards = new();
+            if (deck.Count <= 0) return cards;
+
+            cards.Add(deck[0]);
+            deck.RemoveAt(0);
+
+            return cards;
+        }
+
+        public static List<Card> DeckTakeTwo(ref List<Card> deck) {
+            List<Card> cards = new();
+            cards.AddRange(DeckTakeOne(ref deck));
+            cards.AddRange(DeckTakeOne(ref deck));
+            return cards;
+        }
+
+        public static List<Card> DeckTakeAmount(ref List<Card> deck, int amount) {
+            List<Card> cards = new();
+            for (int i = 0; i < amount; i++) {
+                cards.AddRange(DeckTakeOne(ref deck));
+            }
+            
+            if (cards.Count < amount) {
+                Debug.LogWarning("Requested more cards than are available in the deck.");
+            }
+
+            return cards;
+        }
+        
+        public static void ShowCards(ref List<Card> cards) {
+            foreach (Card c in cards) {
+                c.Visible = true;
+            }
+        }
     }
 }
