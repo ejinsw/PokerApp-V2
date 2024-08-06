@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using Poker;
 using UnityEditor.Tilemaps;
 using UnityEngine;
@@ -24,6 +25,9 @@ public class GameManager : MonoBehaviour {
     private List<Card> m_communityCards = new();
 
     private List<Player> m_players = new();
+    private Dictionary<Player, PlayerComponent> m_playerComponents = new();
+
+    private Player User;
 
     #region Serialize Fields
 
@@ -33,11 +37,13 @@ public class GameManager : MonoBehaviour {
     [SerializeField] public Sprite IconSpades;
 
     [SerializeField] private GameObject playerPrefab;
-    [SerializeField] private Transform playersTransform;
+    [SerializeField] private List<Transform> playersTransforms;
+    [SerializeField] private Transform userTransform;
+    
     [SerializeField] private GameObject cardPrefab;
     [SerializeField] private Transform communityCardsTransform;
 
-    [SerializeField] private int m_numPlayers = 2;
+    [SerializeField] private int m_numPlayers = 3;
 
     #endregion
 
@@ -88,42 +94,91 @@ public class GameManager : MonoBehaviour {
         return cards;
     }
 
-    public void CreateCard(Suit suit, Rank rank, Transform hand, float scale = 1) {
+    public void ShowCards(ref List<Card> cards) {
+        foreach (Card c in cards) {
+            c.Visible = true;
+        }
+    }
+
+    public void CreateCard(Card card, Transform hand, float scale = 1) {
         GameObject cardObject = Instantiate(cardPrefab, hand);
         CardComponent component = cardObject.GetComponent<CardComponent>();
-        component.SetSuit(suit); 
-        component.SetRank(rank); 
+        component.Initialize(card);
         component.SetScale(scale);
     }
 
     /// <summary>
-    /// Creates a new Player instance, adds it to the player list,
-    /// and initializes the corresponding PlayerComponent.
+    /// Initializes a corresponding PlayerComponent for a Player instance.
     /// </summary>
-    private void CreatePlayer() {
-        Player p = new Player(Utilities.RandomName(), DeckTakeTwo(ref m_deck), Utilities.RandomDouble(0, 1000));
-        m_players.Add(p);
-        GameObject playerObject = Instantiate(playerPrefab, playersTransform);
+    private PlayerComponent CreatePlayer(Player p, Transform parent) {
+        GameObject playerObject = Instantiate(playerPrefab, parent);
         PlayerComponent playerComponent = playerObject.GetComponent<PlayerComponent>();
         playerComponent.Initialize(p);
+
+        return playerComponent;
     }
 
     #endregion
 
     private void Initialize() {
+        // Deck
         m_deck = ResetDeck();
         m_deck.Shuffle();
 
+        // Community Cards
         m_communityCards.Clear();
         m_communityCards = DeckTakeAmount(ref m_deck, Utilities.RandomInt(3, 5));
+        ShowCards(ref m_communityCards);
+
         foreach (Card c in m_communityCards) {
-            CreateCard(c.Suit, c.Rank, communityCardsTransform, 2);
+            CreateCard(c, communityCardsTransform, 2);
         }
 
         m_players.Clear();
+        // User
+        User = new("You", DeckTakeTwo(ref m_deck), Utilities.RandomDouble(0, 1000));
+        m_players.Add(User);
+
+        // Other Players
         for (int i = 0; i < m_numPlayers; i++) {
-            CreatePlayer();
+            string name = Utilities.RandomName();
+            while (m_players.Any(p => p.Name == name)) {
+                name = Utilities.RandomName();
+            }
+
+            Player p = new Player(name, DeckTakeTwo(ref m_deck), Utilities.RandomDouble(0, 1000));
+            m_players.Add(p);
         }
+
+        m_players.Shuffle();
+
+        int index = 0;
+        // Player Components
+        foreach (Player p in m_players) {
+            if (p == User) {
+                m_playerComponents.Add(p, CreatePlayer(p, userTransform));
+            }
+            else {
+                m_playerComponents.Add(p, CreatePlayer(p, playersTransforms[index]));
+                index++;
+            }
+        }
+
+        // Start
+        StartCoroutine(GameStart());
+    }
+
+    #endregion
+
+    #region Game Cycle
+
+    private IEnumerator GameStart() {
+        foreach (Player p in m_players) {
+            if (p.Folded) continue;
+            yield return m_playerComponents[p].DoTurn();
+        }
+
+        yield return null;
     }
 
     #endregion

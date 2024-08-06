@@ -7,15 +7,15 @@ namespace Poker {
     public static class Utilities {
         public static Random rng = new Random((uint)Guid.NewGuid().GetHashCode());
 
-        public static List<string> player_names = new() {
-            "David",
-            "Tom",
-            "Will",
-            "Julie",
-            "Wanda",
-            "Winston",
-            "Brook",
-            "Thomas"
+        public static List<string> player_names = new List<string>
+        {
+            "David", "Tom", "Will", "Julie", "Wanda", "Winston", "Brook", "Thomas",
+            "John", "Jane", "Alice", "Bob", "Charlie", "Michael", "Sarah", "Emily",
+            "James", "Linda", "Daniel", "Laura", "Matthew", "Jessica", "Joshua", "Karen",
+            "Andrew", "Barbara", "Kevin", "Helen", "Paul", "Donna", "Mark", "Lisa",
+            "Jason", "Nancy", "Ryan", "Betty", "Adam", "Sandra", "Nathan", "Carol",
+            "Brian", "Ruth", "Scott", "Sharon", "Aaron", "Michelle", "Gary", "Deborah",
+            "Frank", "Shirley"
         };
 
         public static Dictionary<Rank, string> rank_as_string = new()

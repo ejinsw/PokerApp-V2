@@ -31,9 +31,12 @@ namespace Poker {
         private Suit _suit;
         private Rank _rank;
 
-        public Card(Suit suit, Rank rank) {
+        private bool _visible;
+
+        public Card(Suit suit, Rank rank, bool visible = false) {
             Suit = suit;
             Rank = rank;
+            Visible = visible;
         }
 
         public Suit Suit {
@@ -45,16 +48,23 @@ namespace Poker {
             get => _rank;
             private set => _rank = value;
         }
+
+        public bool Visible {
+            get => _visible;
+            set => _visible = value;
+        }
     }
 
     public class Player {
         private string _name;
         private List<Card> _cards;
         private double _money;
-        public Player(string name, List<Card> cards, double money) {
+        private bool _folded;
+        public Player(string name, List<Card> cards, double money, bool folded = false) {
             Name = name;
             Cards = cards;
             Money = money;
+            Folded = folded;
         }
 
         public string Name {
@@ -71,6 +81,11 @@ namespace Poker {
             set => _money = value;
         }
 
+        public bool Folded {
+            get => _folded;
+            set => _folded = value;
+        }
+        
         #region Debugging
         
         public void PrintDetails() {
