@@ -3,11 +3,9 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Poker;
-using UnityEditor.Tilemaps;
 using UnityEngine;
-using UnityEngine.UI;
 
-public class GameManager : MonoBehaviour {
+public partial class GameManager : MonoBehaviour {
     #region Singleton
 
     public static GameManager instance;
@@ -28,6 +26,7 @@ public class GameManager : MonoBehaviour {
     private Dictionary<Player, PlayerComponent> m_playerComponents = new();
 
     private Player User;
+    private bool userTurn = false;
 
     #region Serialize Fields
 
@@ -39,7 +38,7 @@ public class GameManager : MonoBehaviour {
     [SerializeField] private GameObject playerPrefab;
     [SerializeField] private List<Transform> playersTransforms;
     [SerializeField] private Transform userTransform;
-    
+
     [SerializeField] public GameObject cardPrefab;
     [SerializeField] private GameObject cardHorizontalPrefab;
     [SerializeField] private Transform communityCardsTransform;
@@ -132,7 +131,7 @@ public class GameManager : MonoBehaviour {
         ShowCards(ref m_communityCards);
 
         foreach (Card c in m_communityCards) {
-            CreateCard(c,cardHorizontalPrefab, communityCardsTransform, 2);
+            CreateCard(c, cardHorizontalPrefab, communityCardsTransform, 1.4f);
         }
 
         m_players.Clear();
@@ -178,10 +177,40 @@ public class GameManager : MonoBehaviour {
     private IEnumerator GameStart() {
         foreach (Player p in m_players) {
             if (p.Folded) continue;
-            yield return m_playerComponents[p].DoTurn();
+
+            if (p == User) {
+                userTurn = true;
+                while (userTurn) {
+                    yield return null;
+                }
+            }
+            else {
+                yield return m_playerComponents[p].DoTurn();
+            }
         }
 
         yield return null;
+    }
+
+    #endregion
+
+    #region User
+
+    public void Fold() {
+        User.Folded = true;
+        userTurn = false;
+    }
+    
+    public void Check() {
+        userTurn = false;
+    }
+
+    public void Call() {
+        userTurn = false;
+    }
+
+    public void Raise() {
+        userTurn = false;
     }
 
     #endregion

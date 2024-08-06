@@ -21,6 +21,9 @@ public class PlayerComponent : MonoBehaviour {
     }
 
     public IEnumerator DoTurn() {
+        
+        
+        
         yield return null;
     }
 
