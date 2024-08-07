@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Poker;
+using TMPro;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.UI;
@@ -34,6 +35,7 @@ public class GameManager : MonoBehaviour {
 
     private ActionType userAction = ActionType.Null;
 
+    private long userRaiseAmount = 0;
 
     #region Serialize Fields
 
@@ -55,6 +57,9 @@ public class GameManager : MonoBehaviour {
     [SerializeField] private Button foldButton;
     [SerializeField] private Button checkButton;
     [SerializeField] private Button callButton;
+
+    [SerializeField] private Slider raiseSlider;
+    [SerializeField] private TMP_Text raiseText;
     [SerializeField] private Button raiseButton;
 
     #endregion
@@ -75,6 +80,13 @@ public class GameManager : MonoBehaviour {
 
         callButton.onClick.RemoveAllListeners();
         callButton.onClick.AddListener(() => UserAction(ActionType.Call));
+
+        raiseSlider.onValueChanged.RemoveAllListeners();
+        raiseSlider.onValueChanged.AddListener((value) => {
+            userRaiseAmount = (long)value;
+            raiseText.text = $"${userRaiseAmount}";
+        });
+        raiseText.text = $"${userRaiseAmount}";
 
         raiseButton.onClick.RemoveAllListeners();
         raiseButton.onClick.AddListener(() => UserAction(ActionType.Raise));
@@ -310,11 +322,7 @@ public class GameManager : MonoBehaviour {
 
                 break;
             case ActionType.Raise:
-                // TODO: Let player choose raise
-                long raiseAmount = game.LastRaiser.LastAction() != null
-                    ? Utilities.RandomInt((int)game.LastRaiser.LastAction().Money + 10, (int)game.LastRaiser.LastAction().Money + 100)
-                    : Utilities.RandomInt(10, 100);
-                yield return StartCoroutine(Raise(raiseAmount));
+                yield return StartCoroutine(Raise(userRaiseAmount));
                 break;
         }
 
@@ -326,6 +334,16 @@ public class GameManager : MonoBehaviour {
     #region User Actions
 
     private void ActivateButtons(bool activate) {
+        long minRaise = 0;
+        if (game.LastRaiser != null && game.LastRaiser.LastAction() != null) {
+            minRaise = game.LastRaiser.LastAction().Money + 1;
+        }
+
+        raiseSlider.minValue = Math.Min(0, game.User.Money - minRaise);
+        raiseSlider.maxValue = Math.Min(200, game.User.Money - minRaise);
+
+        raiseSlider.gameObject.SetActive(false);
+        raiseText.gameObject.SetActive(false);
         foldButton.gameObject.SetActive(false);
         checkButton.gameObject.SetActive(false);
         callButton.gameObject.SetActive(false);
@@ -335,13 +353,15 @@ public class GameManager : MonoBehaviour {
                 // Fold, Call, Raise
                 foldButton.gameObject.SetActive(true);
                 callButton.gameObject.SetActive(true);
-                raiseButton.gameObject.SetActive(true);
             }
             else {
                 // Check, Raise
                 checkButton.gameObject.SetActive(true);
-                raiseButton.gameObject.SetActive(true);
             }
+
+            raiseButton.gameObject.SetActive(true);
+            raiseSlider.gameObject.SetActive(true);
+            raiseText.gameObject.SetActive(true);
         }
     }
 
@@ -375,23 +395,14 @@ public class GameManager : MonoBehaviour {
             ? amount - game.User.LastAction().Money
             : amount;
 
-        #region Null Check
-
-        if (game.User == null) {
-            Debug.LogError("game.User is null in Call method.");
-            yield break;
-        }
-
-        #endregion
-
-        game.User.UseMoney(useAmount);
-        game.User.ActionLog.Add(new PlayerAction(ActionType.Call, game.LastRaiser.LastAction().Money));
+        game.User.UseMoney(Math.Min(useAmount, game.User.Money));
+        game.User.ActionLog.Add(new PlayerAction(ActionType.Call, Math.Min(useAmount, game.User.Money)));
         yield return null;
     }
 
     public IEnumerator Raise(long amount) {
-        long useAmount = game.User.LastAction() != null
-            ? amount - game.User.LastAction().Money
+        long useAmount = game.LastRaiser.LastAction() != null
+            ? amount + game.LastRaiser.LastAction().Money
             : amount;
         game.User.UseMoney(useAmount);
         game.User.ActionLog.Add(new PlayerAction(ActionType.Raise, amount));
