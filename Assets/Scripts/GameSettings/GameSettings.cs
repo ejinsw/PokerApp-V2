@@ -22,6 +22,7 @@ public class GameSettings : ScriptableObject {
     public long playerStartingMoney;
     public bool enableCustomPlayerList;
     public List<Player> customPlayerList;
+    public bool enableCustomPlayerActionLog;
 
     [Header("Game Settings")] public bool randomGame;
     public long startingPotSize;

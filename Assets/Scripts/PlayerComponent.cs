@@ -28,7 +28,7 @@ public class PlayerComponent : MonoBehaviour {
     public IEnumerator DoTurn() {
         // TODO: Replace probability with folding frequency
         if (Utilities.TrueWithProbability(0.3f) && GameManager.instance.game.LastRaiser != null) {
-            yield return StartCoroutine(Fold());
+            yield return StartCoroutine(Fold(true));
         }
         else {
             Player lastRaiser = GameManager.instance.game.LastRaiser;
@@ -36,25 +36,25 @@ public class PlayerComponent : MonoBehaviour {
                 // Call or reraise
                 // TODO: Change the probability of calling vs reraising
                 if (Utilities.TrueWithProbability(0.5f)) {
-                    yield return StartCoroutine(Call(lastRaiser.LastAction().Money));
+                    yield return StartCoroutine(Call(lastRaiser.LastAction().Money, true));
                 }
                 else {
                     // TODO: Change the bounds for reraising from just +10 to +100
-                    double raiseAmount = lastRaiser.LastAction() != null 
-                        ? Utilities.RandomDouble(lastRaiser.LastAction().Money + 10, lastRaiser.LastAction().Money + 100) 
-                        : Utilities.RandomDouble(10, 100);
-                    yield return StartCoroutine(Raise((float)raiseAmount));
+                    long raiseAmount = lastRaiser.LastAction() != null
+                        ? Utilities.RandomInt((int)lastRaiser.LastAction().Money + 10, (int)lastRaiser.LastAction().Money + 100)
+                        : Utilities.RandomInt(10, 100);
+                    yield return StartCoroutine(Raise(raiseAmount, true));
                 }
             }
             else {
                 // Check or raise
                 // TODO: Change the probability of checking vs raising
                 if (Utilities.TrueWithProbability(0.5f)) {
-                    yield return StartCoroutine(Check());
+                    yield return StartCoroutine(Check(true));
                 }
                 else {
                     // TODO: Change the bounds for raising 
-                    yield return StartCoroutine(Raise((float)Utilities.RandomDouble(10, 100)));
+                    yield return StartCoroutine(Raise(Utilities.RandomInt(10, 100), true));
                 }
             }
         }
@@ -62,32 +62,59 @@ public class PlayerComponent : MonoBehaviour {
         yield return null;
     }
 
-    public IEnumerator Fold() {
-        Player.ActionLog.Add(new PlayerAction(ActionType.Fold, 0));
+    public IEnumerator DoTurn(PlayerAction action) {
+        switch (action.ActionType) {
+            case ActionType.Fold:
+                yield return StartCoroutine(Fold(false));
+                break;
+            case ActionType.Check:
+                yield return StartCoroutine(Check(false));
+                break;
+            case ActionType.Call:
+                yield return StartCoroutine(Call(action.Money, false));
+                break;
+            case ActionType.Raise:
+                yield return StartCoroutine(Raise(action.Money, false));
+                break;
+        }
+
+        yield return null;
+    }
+
+    public IEnumerator Fold(bool logAction) {
+        if (logAction)
+            Player.ActionLog.Add(new PlayerAction(ActionType.Fold, 0));
         Player.Folded = true;
         yield return null;
     }
 
-    public IEnumerator Check() {
-        Player.ActionLog.Add(new PlayerAction(ActionType.Check, 0));
+    public IEnumerator Check(bool logAction) {
+        if (logAction)
+            Player.ActionLog.Add(new PlayerAction(ActionType.Check, 0));
         yield return null;
     }
 
-    public IEnumerator Call(float callAmount) {
-        float useAmount = Player.LastAction() != null 
-            ? callAmount - Player.LastAction().Money 
-            : callAmount;
-        Player.UseMoney(useAmount);
-        Player.ActionLog.Add(new PlayerAction(ActionType.Call, callAmount));
+    public IEnumerator Call(long callAmount, bool logAction) {
+        // TODO: For continuous games DON'T DELETE
+        // long useAmount = Player.LastAction() != null
+        //     ? callAmount - Player.LastAction().Money
+        // : callAmount;
+        
+        Player.UseMoney(callAmount);
+        if (logAction)
+            Player.ActionLog.Add(new PlayerAction(ActionType.Call, callAmount));
         yield return null;
     }
 
-    public IEnumerator Raise(float raiseAmount) {
-        float useAmount = Player.LastAction() != null 
-            ? raiseAmount - Player.LastAction().Money 
-            : raiseAmount;
-        Player.UseMoney(useAmount);
-        Player.ActionLog.Add(new PlayerAction(ActionType.Raise, raiseAmount));
+    public IEnumerator Raise(long raiseAmount, bool logAction) {
+        // TODO: For continuous games DON'T DELETE
+        // long useAmount = Player.LastAction() != null
+        //     ? raiseAmount - Player.LastAction().Money
+        //     : raiseAmount;
+
+        Player.UseMoney(raiseAmount);
+        if (logAction)
+            Player.ActionLog.Add(new PlayerAction(ActionType.Raise, raiseAmount));
         GameManager.instance.game.LastRaiser = Player;
         yield return null;
     }

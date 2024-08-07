@@ -135,7 +135,8 @@ public class GameManager : MonoBehaviour {
             }
 
             if (gameSettings.enableCustomPlayerList) {
-                players = new List<Player>(gameSettings.customPlayerList);
+                players = gameSettings.customPlayerList.Select(player => (Player)player.Clone()).ToList();
+
                 foreach (Player p in players) {
                     Utilities.DeckTakeCards(ref deck, p.Cards);
                 }
@@ -225,17 +226,19 @@ public class GameManager : MonoBehaviour {
 
     private IEnumerator GameStart() {
         foreach (Player p in game.Players) {
-            if (p.Folded) {
-                p.ActionLog.Add(new PlayerAction(ActionType.Fold, 0));
-                Debug.Log(p.Name + " " + Enum.GetName(typeof(ActionType), p.LastAction().ActionType) + ": " + p.LastAction().Money);
-                continue;
-            } // skip folders
-
-            if (game.LastRaiser == p) continue; // skip last raiser
-
-            if (p.LastAction() != null
-                && game.LastRaiser != null
-                && p.LastAction().Money == game.LastRaiser.LastAction().Money) continue; // skip ppl who called already
+            // TODO: Finish implementing logic for continuous games
+            // TODO: DON'T DELETE THIS!
+            // if (p.Folded) {
+            //     p.ActionLog.Add(new PlayerAction(ActionType.Fold, 0));
+            //     Debug.Log(p.Name + " " + Enum.GetName(typeof(ActionType), p.LastAction().ActionType) + ": " + p.LastAction().Money);
+            //     continue;
+            // } // skip folders
+            //
+            // if (game.LastRaiser == p) continue; // skip last raiser
+            //
+            // if (p.LastAction() != null
+            //     && game.LastRaiser != null
+            //     && p.LastAction().Money == game.LastRaiser.LastAction().Money) continue; // skip ppl who called already
 
             if (p == game.User) {
                 yield return StartCoroutine(UserTurn());
@@ -250,7 +253,19 @@ public class GameManager : MonoBehaviour {
 
                 #endregion
 
-                yield return StartCoroutine(playerComponents[p].DoTurn());
+                if (gameSettings.enableCustomPlayerActionLog) {
+                    PlayerAction action = p.NextAction();
+
+                    if (action == null) {
+                        yield return StartCoroutine(playerComponents[p].DoTurn());
+                    }
+                    else {
+                        yield return StartCoroutine(playerComponents[p].DoTurn(action));
+                    }
+                }
+                else {
+                    yield return StartCoroutine(playerComponents[p].DoTurn());
+                }
             }
 
             playerComponents[p].UpdateUI();
@@ -258,10 +273,12 @@ public class GameManager : MonoBehaviour {
             Debug.Log(p.Name + " " + Enum.GetName(typeof(ActionType), p.LastAction().ActionType) + ": " + p.LastAction().Money);
         }
 
-        if (!Utilities.AllResponded(game.LastRaiser, game.Players))
-            yield return GameStart();
+        // TODO: Finish implementing logic for continuous games
+        // TODO: DON'T DELETE THIS!
+        // if (!Utilities.AllResponded(game.LastRaiser, game.Players))
+        //     yield return GameStart();
 
-        game.LastRaiser = null;
+        // game.LastRaiser = null;
 
         yield return null;
     }
@@ -294,10 +311,10 @@ public class GameManager : MonoBehaviour {
                 break;
             case ActionType.Raise:
                 // TODO: Let player choose raise
-                double raiseAmount = game.LastRaiser.LastAction() != null
-                    ? Utilities.RandomDouble(game.LastRaiser.LastAction().Money + 10, game.LastRaiser.LastAction().Money + 100)
-                    : Utilities.RandomDouble(10, 100);
-                yield return StartCoroutine(Raise((float)raiseAmount));
+                long raiseAmount = game.LastRaiser.LastAction() != null
+                    ? Utilities.RandomInt((int)game.LastRaiser.LastAction().Money + 10, (int)game.LastRaiser.LastAction().Money + 100)
+                    : Utilities.RandomInt(10, 100);
+                yield return StartCoroutine(Raise(raiseAmount));
                 break;
         }
 
@@ -344,7 +361,7 @@ public class GameManager : MonoBehaviour {
         yield return null;
     }
 
-    public IEnumerator Call(float amount) {
+    public IEnumerator Call(long amount) {
         #region Null Check
 
         if (game.LastRaiser == null || game.LastRaiser.LastAction() == null) {
@@ -354,7 +371,7 @@ public class GameManager : MonoBehaviour {
 
         #endregion
 
-        float useAmount = game.User.LastAction() != null
+        long useAmount = game.User.LastAction() != null
             ? amount - game.User.LastAction().Money
             : amount;
 
@@ -372,8 +389,8 @@ public class GameManager : MonoBehaviour {
         yield return null;
     }
 
-    public IEnumerator Raise(float amount) {
-        float useAmount = game.User.LastAction() != null
+    public IEnumerator Raise(long amount) {
+        long useAmount = game.User.LastAction() != null
             ? amount - game.User.LastAction().Money
             : amount;
         game.User.UseMoney(useAmount);

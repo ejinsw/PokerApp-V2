@@ -32,14 +32,14 @@ namespace Poker {
     }
 
     [Serializable]
-    public class Card {
+    public class Card : ICloneable {
         [SerializeField] private Suit _suit;
         [SerializeField] private Rank _rank;
-
         [SerializeField] private bool _visible;
 
-        public override bool Equals(object obj)
-        {
+        #region Operator Override
+
+        public override bool Equals(object obj) {
             if (obj == null || GetType() != obj.GetType())
                 return false;
 
@@ -47,15 +47,16 @@ namespace Poker {
             return Suit == card.Suit && Rank == card.Rank;
         }
 
-        public override int GetHashCode()
-        {
+        public override int GetHashCode() {
             return (Suit, Rank).GetHashCode();
         }
 
+        #endregion
+
         public Card(Suit suit, Rank rank, bool visible = false) {
-            Suit = suit;
-            Rank = rank;
-            Visible = visible;
+            _suit = suit;
+            _rank = rank;
+            _visible = visible;
         }
 
         public Suit Suit {
@@ -72,6 +73,11 @@ namespace Poker {
             get => _visible;
             set => _visible = value;
         }
+        
+        public object Clone() {
+            return new Card(_suit, _rank, _visible);
+        }
+
     }
 
     [Serializable]
@@ -84,16 +90,16 @@ namespace Poker {
     }
 
     [Serializable]
-    public class PlayerAction {
-        [SerializeField] private float _money;
+    public class PlayerAction : ICloneable {
+        [SerializeField] private long _money;
         [SerializeField] private ActionType _actionType;
 
-        public PlayerAction(ActionType actionType, float money) {
-            ActionType = actionType;
-            Money = money;
+        public PlayerAction(ActionType actionType, long money) {
+            _actionType = actionType;
+            _money = money;
         }
 
-        public float Money {
+        public long Money {
             get => _money;
             private set => _money = value;
         }
@@ -102,22 +108,28 @@ namespace Poker {
             get => _actionType;
             private set => _actionType = value;
         }
+
+        public object Clone() {
+            return new PlayerAction(_actionType, _money);
+        }
     }
 
     [Serializable]
-    public class Player {
+    public class Player : ICloneable {
         [SerializeField] private string _name;
         [SerializeField] private List<Card> _cards;
-        [SerializeField] private double _money;
+        [SerializeField] private long _money;
         [SerializeField] private bool _folded;
         [SerializeField] private List<PlayerAction> _actionLog;
+        [SerializeField] private int next = 0;
 
-        public Player(string name, List<Card> cards, double money, bool folded = false) {
-            Name = name;
-            Cards = cards;
-            Money = money;
-            Folded = folded;
-            ActionLog = new();
+        public Player(string name, List<Card> cards, long money, bool folded = false, List<PlayerAction> actionLog = null, int next = 0) {
+            _name = name;
+            _cards = cards ?? new List<Card>();
+            _money = money;
+            _folded = folded;
+            _actionLog = actionLog ?? new List<PlayerAction>();
+            this.next = next;
         }
 
         public string Name {
@@ -130,9 +142,9 @@ namespace Poker {
             set => _cards = value;
         }
 
-        public double Money {
+        public long Money {
             get => _money;
-            set => _money = Utilities.FormatMoney(value);
+            set => _money = value;
         }
 
         public bool Folded {
@@ -149,8 +161,20 @@ namespace Poker {
             return ActionLog.LastOrDefault();
         }
 
-        public void UseMoney(float amount) {
+        public PlayerAction NextAction() {
+            if (next >= ActionLog.Count) return null;
+            PlayerAction nextAction = ActionLog[next];
+            next++;
+            return nextAction;
+        }
+
+        public void UseMoney(long amount) {
             Money -= amount;
+        }
+
+        public object Clone() {
+            return new Player(_name, _cards.Select(card => (Card)card.Clone()).ToList(), 
+                _money, _folded, _actionLog.Select(action => (PlayerAction)action.Clone()).ToList(), next);
         }
     }
 
@@ -163,7 +187,7 @@ namespace Poker {
         [SerializeField] private Player _lastRaiser;
 
         [SerializeField] private int _numPlayers;
-        [SerializeField] private float _pot;
+        [SerializeField] private long _pot;
 
         public Game(int numPlayers) {
             LastRaiser = null;
@@ -181,7 +205,7 @@ namespace Poker {
             // Players
             Players = new();
             // User
-            User = new("You", Utilities.DeckTakeTwo(ref _deck), Utilities.RandomDouble(0, 1000));
+            User = new("You", Utilities.DeckTakeTwo(ref _deck), Utilities.RandomInt(0, 1000));
             List<Card> userCards = User.Cards;
             Utilities.ShowCards(ref userCards);
             Players.Add(User);
@@ -193,7 +217,7 @@ namespace Poker {
                     name = Utilities.RandomName();
                 }
 
-                Player p = new Player(name, Utilities.DeckTakeTwo(ref _deck), Utilities.RandomDouble(0, 1000));
+                Player p = new Player(name, Utilities.DeckTakeTwo(ref _deck), Utilities.RandomInt(0, 1000));
                 Players.Add(p);
             }
 
@@ -210,12 +234,12 @@ namespace Poker {
             User = user;
 
             List<Card> userCards = User.Cards;
-            
+
             Utilities.ShowCards(ref userCards);
-            
+
             Players.Add(User);
             Players.TrySwap(Players.IndexOf(User), userPosition, out Exception err);
-            
+
             if (err != null) {
                 Debug.LogError($"Failed swapping user to position {userPosition}: {err.Message}");
             }
@@ -251,7 +275,7 @@ namespace Poker {
             set => _numPlayers = value;
         }
 
-        public float Pot {
+        public long Pot {
             get => _pot;
             set => _pot = value;
         }
