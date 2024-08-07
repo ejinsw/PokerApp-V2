@@ -127,7 +127,13 @@ public class GameManager : MonoBehaviour {
 
     private IEnumerator GameStart() {
         foreach (Player p in game.Players) {
-            if (p.Folded) continue;
+            if (p.Folded) {
+                p.ActionLog.Add(new PlayerAction(ActionType.Fold, 0));
+                Debug.Log(p.Name + " " + Enum.GetName(typeof(ActionType), p.LastAction().ActionType) + ": " + p.LastAction().Money);
+                continue;
+            } // skip folders
+
+            if (game.LastRaiser == p) continue; // skip last raiser
 
             if (p == game.User) {
                 yield return StartCoroutine(UserTurn());
@@ -136,11 +142,14 @@ public class GameManager : MonoBehaviour {
                 yield return StartCoroutine(playerComponents[p].DoTurn());
             }
 
-            Debug.Log(p.Name + " " + Enum.GetName(typeof(ActionType), p.ActionLog[game.Round].ActionType) + ": " + p.ActionLog[game.Round].Money);
+            Debug.Log(p.Name + " " + Enum.GetName(typeof(ActionType), p.LastAction().ActionType) + ": " + p.LastAction().Money);
         }
 
-        game.Round++;
+        if (!Utilities.AllResponded(game.LastRaiser, game.Players))
+            yield return GameStart();
 
+        game.LastRaiser = null;
+        
         yield return null;
     }
 
@@ -179,7 +188,7 @@ public class GameManager : MonoBehaviour {
         callButton.gameObject.SetActive(false);
         raiseButton.gameObject.SetActive(false);
         if (activate) {
-            if (Utilities.ContainsRaise(game.User, game.Players, game.Round)) {
+            if (game.LastRaiser != null && game.LastRaiser != game.User) {
                 // Fold, Call, Raise
                 foldButton.gameObject.SetActive(true);
                 callButton.gameObject.SetActive(true);
@@ -210,12 +219,13 @@ public class GameManager : MonoBehaviour {
     }
 
     public IEnumerator Call() {
-        game.User.ActionLog.Add(new PlayerAction(ActionType.Call, 0));
+        game.User.ActionLog.Add(new PlayerAction(ActionType.Call, game.LastRaiser.LastAction().Money));
         yield return null;
     }
 
     public IEnumerator Raise() {
         game.User.ActionLog.Add(new PlayerAction(ActionType.Raise, 0));
+        game.LastRaiser = game.User;
         yield return null;
     }
 

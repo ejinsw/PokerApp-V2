@@ -22,24 +22,21 @@ public class PlayerComponent : MonoBehaviour {
     }
 
     public IEnumerator DoTurn() {
-        List<Player> players = GameManager.instance.game.Players;
-        int round = GameManager.instance.game.Round;
-
         // TODO: Replace probability with folding frequency
-        if (Utilities.TrueWithProbability(0.3f)) {
+        if (Utilities.TrueWithProbability(0.3f) && GameManager.instance.game.LastRaiser != null) {
             yield return StartCoroutine(Fold());
         }
         else {
-            Player highestRaiser = Utilities.HighestRaiser(Player, players, round);
-            if (Utilities.ContainsRaise(Player, players, round) && highestRaiser != Player) {
+            Player lastRaiser = GameManager.instance.game.LastRaiser;
+            if (lastRaiser != null && lastRaiser != Player) {
                 // Call or reraise
                 // TODO: Change the probability of calling vs reraising
                 if (Utilities.TrueWithProbability(0.5f)) {
-                    yield return StartCoroutine(Call(highestRaiser.ActionLog[round].Money));
+                    yield return StartCoroutine(Call(lastRaiser.LastAction().Money));
                 }
                 else {
                     // TODO: Change the bounds for reraising from just +100
-                    yield return StartCoroutine(Raise((float)Utilities.RandomDouble(highestRaiser.ActionLog[round].Money, highestRaiser.ActionLog[round].Money + 100)));
+                    yield return StartCoroutine(Raise((float)Utilities.RandomDouble(lastRaiser.LastAction().Money, lastRaiser.LastAction().Money + 100)));
                 }
             }
             else {
@@ -60,6 +57,7 @@ public class PlayerComponent : MonoBehaviour {
 
     public IEnumerator Fold() {
         Player.ActionLog.Add(new PlayerAction(ActionType.Fold, 0));
+        Player.Folded = true;
         yield return null;
     }
 
@@ -75,6 +73,7 @@ public class PlayerComponent : MonoBehaviour {
 
     public IEnumerator Raise(float raiseAmount) {
         Player.ActionLog.Add(new PlayerAction(ActionType.Raise, raiseAmount));
+        GameManager.instance.game.LastRaiser = Player;
         yield return null;
     }
 }

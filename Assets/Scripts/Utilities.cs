@@ -121,36 +121,21 @@ namespace Poker {
             }
         }
 
-        public static bool ContainsRaise(Player self, List<Player> players, int currentRound) {
+        public static bool AllResponded(Player lastRaiser, List<Player> players) {
             foreach (Player p in players) {
-                if (p == self) continue; // skip self
-                if (!PlayerWent(p, currentRound)) continue; // skip non-initialized
-                if (p.ActionLog[currentRound].ActionType == ActionType.Raise) return true;
-            }
-
-            return false;
-        }
-
-        public static Player HighestRaiser(Player self, List<Player> players, int currentRound) {
-            if (!ContainsRaise(self, players, currentRound)) return self;
-
-            Player highest = self;
-            
-            foreach (Player p in players) {
-                if (!PlayerWent(p, currentRound)) continue; // skip non-initialized
-                if (p.ActionLog[currentRound].ActionType == ActionType.Raise 
-                    && !PlayerWent(highest, currentRound) 
-                    || p.ActionLog[currentRound].ActionType == ActionType.Raise 
-                    && p.ActionLog[currentRound].Money > highest.ActionLog[currentRound].Money) {
-                    highest = p;
+                // Not everyone called/folded to a raise
+                if (lastRaiser != null) {
+                    if (lastRaiser == p) continue;
+                    if (p.LastAction() == null) continue;
+                    if (p.LastAction().ActionType != ActionType.Fold
+                        && p.LastAction().ActionType != ActionType.Call
+                        || p.LastAction().Money < lastRaiser.LastAction().Money) {
+                        return false;
+                    }
                 }
             }
-            
-            return highest;
-        }
 
-        public static bool PlayerWent(Player player, int round) {
-            return round < player.ActionLog.Count;
+            return true;
         }
 
         #region Bluff Cases

@@ -124,18 +124,9 @@ namespace Poker {
             set => _actionLog = value;
         }
 
-        #region Debugging
-
-        public void PrintDetails() {
-            string msg = Name + " " + Money;
-            foreach (Card c in Cards) {
-                msg += " " + Enum.GetName(typeof(Suit), c.Suit) + " " + Enum.GetName(typeof(Rank), c.Rank);
-            }
-
-            Debug.Log(msg);
+        public PlayerAction LastAction() {
+            return ActionLog.LastOrDefault();
         }
-
-        #endregion
     }
 
     public class Game {
@@ -143,15 +134,15 @@ namespace Poker {
         private List<Card> _communityCards;
         private List<Player> _players;
         private Player _user;
+        private Player _lastRaiser;
 
         private int _numPlayers;
         private float _pot;
-        private int _round;
 
         public Game(int numPlayers) {
+            LastRaiser = null;
             NumPlayers = numPlayers;
             Pot = 0;
-            Round = 0;
 
             // Deck
             Deck = Utilities.NewDeck();
@@ -203,16 +194,16 @@ namespace Poker {
             set => _user = value;
         }
 
+        public Player LastRaiser {
+            get => _lastRaiser;
+            set => _lastRaiser = value;
+        }
+
         public int NumPlayers {
             get => _numPlayers;
             set => _numPlayers = value;
         }
-
-        public int Round {
-            get => _round;
-            set => _round = value;
-        }
-
+        
         public float Pot {
             get => _pot;
             set => _pot = value;
