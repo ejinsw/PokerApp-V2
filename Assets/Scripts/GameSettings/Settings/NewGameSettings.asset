@@ -17,7 +17,7 @@ MonoBehaviour:
   randomUserHand: 0
   userHandSuited: 0
   userHandPaired: 1
-  userStartingMoney: 0
+  userStartingMoney: 800
   enableCustomUserHand: 0
   customUserHand: []
   numberOfPlayers: 1
