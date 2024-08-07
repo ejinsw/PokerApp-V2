@@ -127,6 +127,10 @@ namespace Poker {
         public PlayerAction LastAction() {
             return ActionLog.LastOrDefault();
         }
+
+        public void UseMoney(float amount) {
+            Money -= amount;
+        }
     }
 
     public class Game {

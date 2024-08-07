@@ -35,8 +35,11 @@ public class PlayerComponent : MonoBehaviour {
                     yield return StartCoroutine(Call(lastRaiser.LastAction().Money));
                 }
                 else {
-                    // TODO: Change the bounds for reraising from just +100
-                    yield return StartCoroutine(Raise((float)Utilities.RandomDouble(lastRaiser.LastAction().Money, lastRaiser.LastAction().Money + 100)));
+                    // TODO: Change the bounds for reraising from just +10 to +100
+                    double raiseAmount = lastRaiser.LastAction() != null 
+                        ? Utilities.RandomDouble(lastRaiser.LastAction().Money + 10, lastRaiser.LastAction().Money + 100) 
+                        : Utilities.RandomDouble(10, 100);
+                    yield return StartCoroutine(Raise((float)raiseAmount));
                 }
             }
             else {
@@ -67,11 +70,19 @@ public class PlayerComponent : MonoBehaviour {
     }
 
     public IEnumerator Call(float callAmount) {
+        float useAmount = Player.LastAction() != null 
+            ? callAmount - Player.LastAction().Money 
+            : callAmount;
+        Player.UseMoney(useAmount);
         Player.ActionLog.Add(new PlayerAction(ActionType.Call, callAmount));
         yield return null;
     }
 
     public IEnumerator Raise(float raiseAmount) {
+        float useAmount = Player.LastAction() != null 
+            ? raiseAmount - Player.LastAction().Money 
+            : raiseAmount;
+        Player.UseMoney(useAmount);
         Player.ActionLog.Add(new PlayerAction(ActionType.Raise, raiseAmount));
         GameManager.instance.game.LastRaiser = Player;
         yield return null;

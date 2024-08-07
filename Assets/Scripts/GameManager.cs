@@ -135,6 +135,10 @@ public class GameManager : MonoBehaviour {
 
             if (game.LastRaiser == p) continue; // skip last raiser
 
+            if (p.LastAction() != null
+                && game.LastRaiser != null
+                && p.LastAction().Money == game.LastRaiser.LastAction().Money) continue; // skip ppl who called already
+
             if (p == game.User) {
                 yield return StartCoroutine(UserTurn());
             }
@@ -149,7 +153,7 @@ public class GameManager : MonoBehaviour {
             yield return GameStart();
 
         game.LastRaiser = null;
-        
+
         yield return null;
     }
 
@@ -168,10 +172,14 @@ public class GameManager : MonoBehaviour {
                 yield return StartCoroutine(Check());
                 break;
             case ActionType.Call:
-                yield return StartCoroutine(Call());
+                yield return StartCoroutine(Call(game.LastRaiser.LastAction().Money));
                 break;
             case ActionType.Raise:
-                yield return StartCoroutine(Raise());
+                // TODO: Let player choose raise
+                double raiseAmount = game.LastRaiser.LastAction() != null
+                    ? Utilities.RandomDouble(game.LastRaiser.LastAction().Money + 10, game.LastRaiser.LastAction().Money + 100)
+                    : Utilities.RandomDouble(10, 100);
+                yield return StartCoroutine(Raise((float)raiseAmount));
                 break;
         }
 
@@ -218,13 +226,21 @@ public class GameManager : MonoBehaviour {
         yield return null;
     }
 
-    public IEnumerator Call() {
+    public IEnumerator Call(float amount) {
+        float useAmount = game.User.LastAction() != null
+            ? amount - game.User.LastAction().Money
+            : amount;
+        game.User.UseMoney(useAmount);
         game.User.ActionLog.Add(new PlayerAction(ActionType.Call, game.LastRaiser.LastAction().Money));
         yield return null;
     }
 
-    public IEnumerator Raise() {
-        game.User.ActionLog.Add(new PlayerAction(ActionType.Raise, 0));
+    public IEnumerator Raise(float amount) {
+        float useAmount = game.User.LastAction() != null
+            ? amount - game.User.LastAction().Money
+            : amount;
+        game.User.UseMoney(useAmount);
+        game.User.ActionLog.Add(new PlayerAction(ActionType.Raise, amount));
         game.LastRaiser = game.User;
         yield return null;
     }
