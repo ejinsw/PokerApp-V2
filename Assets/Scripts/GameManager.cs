@@ -148,7 +148,7 @@ public class GameManager : MonoBehaviour {
 
             if (gameSettings.enableCustomPlayerList) {
                 players = gameSettings.customPlayerList.Select(player => (Player)player.Clone()).ToList();
-
+                
                 foreach (Player p in players) {
                     Utilities.DeckTakeCards(ref deck, p.Cards);
                 }
