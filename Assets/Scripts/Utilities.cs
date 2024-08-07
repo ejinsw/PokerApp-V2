@@ -123,59 +123,69 @@ namespace Poker {
         }
 
         public static List<Card> DeckTakeCards(ref List<Card> deck, List<Card> cards) {
-            for (int i = 0; i < cards.Count; i++) {
-                for (int j = 0; j < deck.Count; j++) {
-                    if (cards[i] == deck[j]) {
-                        deck.RemoveAt(j);
+            List<int> indicesToRemove = new List<int>();
+
+            for (int i = 0; i < cards.Count; i++)
+            {
+                for (int j = 0; j < deck.Count; j++)
+                {
+                    if (cards[i].Equals(deck[j]))
+                    {
+                        indicesToRemove.Add(j);
+                        break;
                     }
                 }
+            }
+
+            // Remove cards from the deck starting from the highest index to
+            // prevent out of bounds error
+            indicesToRemove.Sort((a, b) => b.CompareTo(a));
+            foreach (int index in indicesToRemove)
+            {
+                deck.RemoveAt(index);
             }
 
             return cards;
         }
 
         public static List<Card> HandSuited(ref List<Card> deck) {
-            List<Card> cards = DeckTakeOne(ref deck);
-
-            #region Null Check
-
-            if (cards.Count == 0) {
-                return cards;
-            }
-
-            #endregion
+            if (deck.Count < 2) return null;
 
             for (int i = 0; i < deck.Count; i++) {
-                if (deck[i].Suit == cards[0].Suit) {
-                    cards.Add(deck[i]);
-                    deck.RemoveAt(i);
-                    break;
+                List<Card> cards = new();
+                cards.Add(deck[i]);
+                
+                if (cards.Count < 1) return null;
+
+                for (int j = i + 1; j < deck.Count; j++) {
+                    if (deck[j].Suit == cards[0].Suit) {
+                        cards.Add(deck[j]);
+                        return DeckTakeCards(ref deck, cards);
+                    }
                 }
             }
 
-            return cards;
+            return null;
         }
-        
+
         public static List<Card> HandPaired(ref List<Card> deck) {
-            List<Card> cards = DeckTakeOne(ref deck);
-
-            #region Null Check
-
-            if (cards.Count == 0) {
-                return cards;
-            }
-
-            #endregion
+            if (deck.Count < 2) return null;
 
             for (int i = 0; i < deck.Count; i++) {
-                if (deck[i].Rank == cards[0].Rank) {
-                    cards.Add(deck[i]);
-                    deck.RemoveAt(i);
-                    break;
+                List<Card> cards = new();
+                cards.Add(deck[i]);
+
+                if (cards.Count < 1) return null;
+
+                for (int j = i + 1; j < deck.Count; j++) {
+                    if (deck[j].Rank == cards[0].Rank) {
+                        cards.Add(deck[j]);
+                        return DeckTakeCards(ref deck, cards);
+                    }
                 }
             }
 
-            return cards;
+            return null;
         }
 
         public static void ShowCards(ref List<Card> cards) {

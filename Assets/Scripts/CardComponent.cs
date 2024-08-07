@@ -22,9 +22,13 @@ public class CardComponent : MonoBehaviour {
                 break;
             case Suit.Diamonds:
                 suit.sprite = GameManager.instance.IconDiamonds;
+                suit.color = Color.red;
+                rank.color = Color.red;
                 break;
             case Suit.Hearts:
                 suit.sprite = GameManager.instance.IconHearts;
+                suit.color = Color.red;
+                rank.color = Color.red;
                 break;
             case Suit.Spades:
                 suit.sprite = GameManager.instance.IconSpades;

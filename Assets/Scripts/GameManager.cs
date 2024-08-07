@@ -112,7 +112,7 @@ public class GameManager : MonoBehaviour {
     /// </summary>
     private void Initialize(GameSettings gameSettings) {
         Debug.Log("Initializing game...");
-        
+
         #region Initialize Game
 
         if (gameSettings.randomGame) {
@@ -121,31 +121,43 @@ public class GameManager : MonoBehaviour {
         else {
             List<Card> deck = Utilities.NewDeck();
             deck.Shuffle();
-            List<Card> communityCards;
-            Player user;
-            List<Player> players;
+            List<Card> communityCards = null;
+            Player user = null;
+            List<Player> players = null;
+
+            // Custom Selections First (to prevent duplicates)
+            if (gameSettings.enableCustomCommunityCards) {
+                communityCards = new List<Card>(Utilities.DeckTakeCards(ref deck, gameSettings.customCommunityCards));
+            }
+
+            if (gameSettings.enableCustomUserHand) {
+                user = new("You", Utilities.DeckTakeCards(ref deck, gameSettings.customUserHand), gameSettings.userStartingMoney);
+            }
+
+            if (gameSettings.enableCustomPlayerList) {
+                players = new List<Player>(gameSettings.customPlayerList);
+                foreach (Player p in players) {
+                    Utilities.DeckTakeCards(ref deck, p.Cards);
+                }
+            }
 
             // Community cards
-            if (gameSettings.enableCustomCommunityCards) {
-                communityCards = new List<Card>(gameSettings.customCommunityCards);
-            }
-            else {
+            if (!gameSettings.enableCustomCommunityCards) {
                 communityCards = Utilities.DeckTakeAmount(ref deck, Utilities.RandomInt(3, 5));
             }
 
             // User
-            if (gameSettings.enableCustomUserHand) {
-                user = new("You", Utilities.DeckTakeCards(ref deck, gameSettings.customUserHand), gameSettings.userStartingMoney);
-            }
-            else {
+            if (!gameSettings.enableCustomUserHand) {
                 if (gameSettings.randomUserHand) {
                     user = new("You", Utilities.DeckTakeTwo(ref deck), gameSettings.userStartingMoney);
                 }
                 else if (gameSettings.userHandPaired) {
                     user = new("You", Utilities.HandPaired(ref deck), gameSettings.userStartingMoney);
+                    if (user.Cards == null) user.Cards = Utilities.DeckTakeTwo(ref deck);
                 }
                 else if (gameSettings.userHandSuited) {
                     user = new("You", Utilities.HandSuited(ref deck), gameSettings.userStartingMoney);
+                    if (user.Cards == null) user.Cards = Utilities.DeckTakeTwo(ref deck);
                 }
                 else {
                     user = new("You", Utilities.DeckTakeTwo(ref deck), gameSettings.userStartingMoney);
@@ -153,10 +165,7 @@ public class GameManager : MonoBehaviour {
             }
 
             // Players
-            if (gameSettings.enableCustomPlayerList) {
-                players = new List<Player>(gameSettings.customPlayerList);
-            }
-            else {
+            if (!gameSettings.enableCustomPlayerList) {
                 players = new();
                 if (gameSettings.randomPlayerHand) {
                     for (int i = 0; i < gameSettings.numberOfPlayers; i++) {
@@ -179,7 +188,7 @@ public class GameManager : MonoBehaviour {
                     }
                 }
             }
-            
+
             game = new(gameSettings.numberOfPlayers, gameSettings.startingPotSize, deck, communityCards, user, gameSettings.userPosition, players);
         }
 
@@ -189,7 +198,7 @@ public class GameManager : MonoBehaviour {
 
         // Community Card Components
         foreach (Card c in game.CommunityCards) {
-            CreateCard(c, cardHorizontalPrefab, communityCardsTransform, 1.4f);
+            CreateCard(c, cardPrefab, communityCardsTransform, 1.4f);
         }
 
         // Player Components

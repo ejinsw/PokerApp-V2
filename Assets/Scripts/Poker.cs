@@ -38,16 +38,18 @@ namespace Poker {
 
         [SerializeField] private bool _visible;
 
-        public static bool operator ==(Card a, Card b) {
-            if (a == null || b == null) return false;
+        public override bool Equals(object obj)
+        {
+            if (obj == null || GetType() != obj.GetType())
+                return false;
 
-            return a.Suit == b.Suit && a.Rank == b.Rank;
+            Card card = (Card)obj;
+            return Suit == card.Suit && Rank == card.Rank;
         }
 
-        public static bool operator !=(Card a, Card b) {
-            if (a == null || b == null) return false;
-
-            return a.Suit != b.Suit || a.Rank != b.Rank;
+        public override int GetHashCode()
+        {
+            return (Suit, Rank).GetHashCode();
         }
 
         public Card(Suit suit, Rank rank, bool visible = false) {
@@ -125,7 +127,7 @@ namespace Poker {
 
         public List<Card> Cards {
             get => _cards;
-            private set => _cards = value;
+            set => _cards = value;
         }
 
         public double Money {
@@ -210,16 +212,9 @@ namespace Poker {
             List<Card> userCards = User.Cards;
             
             Utilities.ShowCards(ref userCards);
-
-            foreach (Player p in Players) {
-                Debug.Log(p.Name);
-            }
             
             Players.Add(User);
             Players.TrySwap(Players.IndexOf(User), userPosition, out Exception err);
-            foreach (Player p in Players) {
-                Debug.Log(p.Name);
-            }
             
             if (err != null) {
                 Debug.LogError($"Failed swapping user to position {userPosition}: {err.Message}");
