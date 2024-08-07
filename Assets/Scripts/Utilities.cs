@@ -122,6 +122,62 @@ namespace Poker {
             return cards;
         }
 
+        public static List<Card> DeckTakeCards(ref List<Card> deck, List<Card> cards) {
+            for (int i = 0; i < cards.Count; i++) {
+                for (int j = 0; j < deck.Count; j++) {
+                    if (cards[i] == deck[j]) {
+                        deck.RemoveAt(j);
+                    }
+                }
+            }
+
+            return cards;
+        }
+
+        public static List<Card> HandSuited(ref List<Card> deck) {
+            List<Card> cards = DeckTakeOne(ref deck);
+
+            #region Null Check
+
+            if (cards.Count == 0) {
+                return cards;
+            }
+
+            #endregion
+
+            for (int i = 0; i < deck.Count; i++) {
+                if (deck[i].Suit == cards[0].Suit) {
+                    cards.Add(deck[i]);
+                    deck.RemoveAt(i);
+                    break;
+                }
+            }
+
+            return cards;
+        }
+        
+        public static List<Card> HandPaired(ref List<Card> deck) {
+            List<Card> cards = DeckTakeOne(ref deck);
+
+            #region Null Check
+
+            if (cards.Count == 0) {
+                return cards;
+            }
+
+            #endregion
+
+            for (int i = 0; i < deck.Count; i++) {
+                if (deck[i].Rank == cards[0].Rank) {
+                    cards.Add(deck[i]);
+                    deck.RemoveAt(i);
+                    break;
+                }
+            }
+
+            return cards;
+        }
+
         public static void ShowCards(ref List<Card> cards) {
             foreach (Card c in cards) {
                 c.Visible = true;
@@ -130,10 +186,12 @@ namespace Poker {
 
         public static bool AllResponded(Player lastRaiser, List<Player> players) {
             foreach (Player p in players) {
+                if (p.Folded) continue; // folders ok
+                if (p.LastAction() == null) return false; // null if haven't gone yet
+
                 // Not everyone called/folded to a raise
                 if (lastRaiser != null) {
-                    if (lastRaiser == p) continue;
-                    if (p.LastAction() == null) continue;
+                    if (lastRaiser == p) continue; // skip last raiser
                     if (p.LastAction().ActionType != ActionType.Fold
                         && p.LastAction().ActionType != ActionType.Call
                         || p.LastAction().Money < lastRaiser.LastAction().Money) {

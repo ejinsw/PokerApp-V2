@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Poker;
 using UnityEngine;
+using UnityEngine.Rendering;
 using UnityEngine.UI;
 
 public class GameManager : MonoBehaviour {
@@ -12,7 +13,13 @@ public class GameManager : MonoBehaviour {
     public static GameManager instance;
 
     private void Awake() {
-        if (instance == null) instance = this;
+        if (instance == null) {
+            instance = this;
+        }
+        else {
+            Debug.LogError("Multiple instances of GameManager found!");
+            Destroy(gameObject);
+        }
     }
 
     #endregion
@@ -30,6 +37,8 @@ public class GameManager : MonoBehaviour {
 
     #region Serialize Fields
 
+    [SerializeField] private GameSettings gameSettings;
+
     [SerializeField] public Sprite IconClubs;
     [SerializeField] public Sprite IconDiamonds;
     [SerializeField] public Sprite IconHearts;
@@ -42,8 +51,6 @@ public class GameManager : MonoBehaviour {
     [SerializeField] public GameObject cardPrefab;
     [SerializeField] private GameObject cardHorizontalPrefab;
     [SerializeField] private Transform communityCardsTransform;
-
-    [SerializeField] private int numPlayers = 3;
 
     [SerializeField] private Button foldButton;
     [SerializeField] private Button checkButton;
@@ -60,12 +67,19 @@ public class GameManager : MonoBehaviour {
         ActivateButtons(false);
 
         // Button callbacks
-        foldButton.onClick.AddListener((() => UserAction(ActionType.Fold)));
-        checkButton.onClick.AddListener((() => UserAction(ActionType.Check)));
-        callButton.onClick.AddListener((() => UserAction(ActionType.Call)));
-        raiseButton.onClick.AddListener((() => UserAction(ActionType.Raise)));
+        foldButton.onClick.RemoveAllListeners();
+        foldButton.onClick.AddListener(() => UserAction(ActionType.Fold));
 
-        Initialize(numPlayers);
+        checkButton.onClick.RemoveAllListeners();
+        checkButton.onClick.AddListener(() => UserAction(ActionType.Check));
+
+        callButton.onClick.RemoveAllListeners();
+        callButton.onClick.AddListener(() => UserAction(ActionType.Call));
+
+        raiseButton.onClick.RemoveAllListeners();
+        raiseButton.onClick.AddListener(() => UserAction(ActionType.Raise));
+
+        Initialize(gameSettings);
     }
 
     #region Utility Methods
@@ -96,9 +110,82 @@ public class GameManager : MonoBehaviour {
     /// <summary>
     /// Initializes the game & components with a given player count.
     /// </summary>
-    private void Initialize(int numPlayers) {
-        // Initialize game
-        game = new(numPlayers);
+    private void Initialize(GameSettings gameSettings) {
+        Debug.Log("Initializing game...");
+        
+        #region Initialize Game
+
+        if (gameSettings.randomGame) {
+            game = new(gameSettings.numberOfPlayers);
+        }
+        else {
+            List<Card> deck = Utilities.NewDeck();
+            deck.Shuffle();
+            List<Card> communityCards;
+            Player user;
+            List<Player> players;
+
+            // Community cards
+            if (gameSettings.enableCustomCommunityCards) {
+                communityCards = new List<Card>(gameSettings.customCommunityCards);
+            }
+            else {
+                communityCards = Utilities.DeckTakeAmount(ref deck, Utilities.RandomInt(3, 5));
+            }
+
+            // User
+            if (gameSettings.enableCustomUserHand) {
+                user = new("You", Utilities.DeckTakeCards(ref deck, gameSettings.customUserHand), gameSettings.userStartingMoney);
+            }
+            else {
+                if (gameSettings.randomUserHand) {
+                    user = new("You", Utilities.DeckTakeTwo(ref deck), gameSettings.userStartingMoney);
+                }
+                else if (gameSettings.userHandPaired) {
+                    user = new("You", Utilities.HandPaired(ref deck), gameSettings.userStartingMoney);
+                }
+                else if (gameSettings.userHandSuited) {
+                    user = new("You", Utilities.HandSuited(ref deck), gameSettings.userStartingMoney);
+                }
+                else {
+                    user = new("You", Utilities.DeckTakeTwo(ref deck), gameSettings.userStartingMoney);
+                }
+            }
+
+            // Players
+            if (gameSettings.enableCustomPlayerList) {
+                players = new List<Player>(gameSettings.customPlayerList);
+            }
+            else {
+                players = new();
+                if (gameSettings.randomPlayerHand) {
+                    for (int i = 0; i < gameSettings.numberOfPlayers; i++) {
+                        players.Add(new(Utilities.RandomName(), Utilities.DeckTakeTwo(ref deck), gameSettings.playerStartingMoney));
+                    }
+                }
+                else if (gameSettings.playerHandPaired) {
+                    for (int i = 0; i < gameSettings.numberOfPlayers; i++) {
+                        players.Add(new(Utilities.RandomName(), Utilities.HandPaired(ref deck), gameSettings.playerStartingMoney));
+                    }
+                }
+                else if (gameSettings.playerHandSuited) {
+                    for (int i = 0; i < gameSettings.numberOfPlayers; i++) {
+                        players.Add(new(Utilities.RandomName(), Utilities.HandSuited(ref deck), gameSettings.playerStartingMoney));
+                    }
+                }
+                else {
+                    for (int i = 0; i < gameSettings.numberOfPlayers; i++) {
+                        players.Add(new(Utilities.RandomName(), Utilities.DeckTakeTwo(ref deck), gameSettings.playerStartingMoney));
+                    }
+                }
+            }
+            
+            game = new(gameSettings.numberOfPlayers, gameSettings.startingPotSize, deck, communityCards, user, gameSettings.userPosition, players);
+        }
+
+        #endregion
+
+        #region Initialize Components
 
         // Community Card Components
         foreach (Card c in game.CommunityCards) {
@@ -116,6 +203,8 @@ public class GameManager : MonoBehaviour {
                 index++;
             }
         }
+
+        #endregion
 
         // Start
         StartCoroutine(GameStart());
@@ -143,11 +232,20 @@ public class GameManager : MonoBehaviour {
                 yield return StartCoroutine(UserTurn());
             }
             else {
+                #region Null Check
+
+                if (!playerComponents.ContainsKey(p) || playerComponents[p] == null) {
+                    Debug.LogError($"PlayerComponent for player {p.Name} is null in GameStart method.");
+                    continue;
+                }
+
+                #endregion
+
                 yield return StartCoroutine(playerComponents[p].DoTurn());
             }
 
             playerComponents[p].UpdateUI();
-            
+
             Debug.Log(p.Name + " " + Enum.GetName(typeof(ActionType), p.LastAction().ActionType) + ": " + p.LastAction().Money);
         }
 
@@ -160,11 +258,14 @@ public class GameManager : MonoBehaviour {
     }
 
     private IEnumerator UserTurn() {
+        Debug.Log("User's turn started.");
         userTurn = true;
         ActivateButtons(true);
         while (userTurn) {
             yield return null;
         }
+
+        Debug.Log($"User action: {userAction}");
 
         switch (userAction) {
             case ActionType.Fold:
@@ -174,7 +275,13 @@ public class GameManager : MonoBehaviour {
                 yield return StartCoroutine(Check());
                 break;
             case ActionType.Call:
-                yield return StartCoroutine(Call(game.LastRaiser.LastAction().Money));
+                if (game.LastRaiser != null && game.LastRaiser.LastAction() != null) {
+                    yield return StartCoroutine(Call(game.LastRaiser.LastAction().Money));
+                }
+                else {
+                    Debug.LogError("LastRaiser or LastRaiser's LastAction is null in UserTurn.");
+                }
+
                 break;
             case ActionType.Raise:
                 // TODO: Let player choose raise
@@ -229,9 +336,28 @@ public class GameManager : MonoBehaviour {
     }
 
     public IEnumerator Call(float amount) {
+        #region Null Check
+
+        if (game.LastRaiser == null || game.LastRaiser.LastAction() == null) {
+            Debug.LogError("LastRaiser or LastRaiser's LastAction is null in Call method.");
+            yield break; // exit coroutine if there's an issue
+        }
+
+        #endregion
+
         float useAmount = game.User.LastAction() != null
             ? amount - game.User.LastAction().Money
             : amount;
+
+        #region Null Check
+
+        if (game.User == null) {
+            Debug.LogError("game.User is null in Call method.");
+            yield break;
+        }
+
+        #endregion
+
         game.User.UseMoney(useAmount);
         game.User.ActionLog.Add(new PlayerAction(ActionType.Call, game.LastRaiser.LastAction().Money));
         yield return null;

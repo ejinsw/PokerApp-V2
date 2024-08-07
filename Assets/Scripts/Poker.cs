@@ -3,8 +3,10 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 namespace Poker {
+    [Serializable]
     public enum Suit {
         Clubs,
         Diamonds,
@@ -12,6 +14,7 @@ namespace Poker {
         Spades
     }
 
+    [Serializable]
     public enum Rank {
         Ace,
         Two,
@@ -28,11 +31,24 @@ namespace Poker {
         King
     }
 
+    [Serializable]
     public class Card {
-        private Suit _suit;
-        private Rank _rank;
+        [SerializeField] private Suit _suit;
+        [SerializeField] private Rank _rank;
 
-        private bool _visible;
+        [SerializeField] private bool _visible;
+
+        public static bool operator ==(Card a, Card b) {
+            if (a == null || b == null) return false;
+
+            return a.Suit == b.Suit && a.Rank == b.Rank;
+        }
+
+        public static bool operator !=(Card a, Card b) {
+            if (a == null || b == null) return false;
+
+            return a.Suit != b.Suit || a.Rank != b.Rank;
+        }
 
         public Card(Suit suit, Rank rank, bool visible = false) {
             Suit = suit;
@@ -56,6 +72,7 @@ namespace Poker {
         }
     }
 
+    [Serializable]
     public enum ActionType {
         Null,
         Fold,
@@ -64,9 +81,10 @@ namespace Poker {
         Raise
     }
 
+    [Serializable]
     public class PlayerAction {
-        private float _money;
-        private ActionType _actionType;
+        [SerializeField] private float _money;
+        [SerializeField] private ActionType _actionType;
 
         public PlayerAction(ActionType actionType, float money) {
             ActionType = actionType;
@@ -84,12 +102,13 @@ namespace Poker {
         }
     }
 
+    [Serializable]
     public class Player {
-        private string _name;
-        private List<Card> _cards;
-        private double _money;
-        private bool _folded;
-        private List<PlayerAction> _actionLog;
+        [SerializeField] private string _name;
+        [SerializeField] private List<Card> _cards;
+        [SerializeField] private double _money;
+        [SerializeField] private bool _folded;
+        [SerializeField] private List<PlayerAction> _actionLog;
 
         public Player(string name, List<Card> cards, double money, bool folded = false) {
             Name = name;
@@ -133,15 +152,16 @@ namespace Poker {
         }
     }
 
+    [Serializable]
     public class Game {
-        private List<Card> _deck;
-        private List<Card> _communityCards;
-        private List<Player> _players;
-        private Player _user;
-        private Player _lastRaiser;
+        [SerializeField] private List<Card> _deck;
+        [SerializeField] private List<Card> _communityCards;
+        [SerializeField] private List<Player> _players;
+        [SerializeField] private Player _user;
+        [SerializeField] private Player _lastRaiser;
 
-        private int _numPlayers;
-        private float _pot;
+        [SerializeField] private int _numPlayers;
+        [SerializeField] private float _pot;
 
         public Game(int numPlayers) {
             LastRaiser = null;
@@ -176,6 +196,34 @@ namespace Poker {
             }
 
             Players.Shuffle();
+        }
+
+        public Game(int numPlayers, long potSize, List<Card> deck, List<Card> communityCards, Player user, int userPosition, List<Player> players) {
+            LastRaiser = null;
+            NumPlayers = numPlayers;
+            Pot = potSize;
+            Deck = deck;
+            CommunityCards = communityCards;
+            Players = players;
+            User = user;
+
+            List<Card> userCards = User.Cards;
+            
+            Utilities.ShowCards(ref userCards);
+
+            foreach (Player p in Players) {
+                Debug.Log(p.Name);
+            }
+            
+            Players.Add(User);
+            Players.TrySwap(Players.IndexOf(User), userPosition, out Exception err);
+            foreach (Player p in Players) {
+                Debug.Log(p.Name);
+            }
+            
+            if (err != null) {
+                Debug.LogError($"Failed swapping user to position {userPosition}: {err.Message}");
+            }
         }
 
         public List<Card> Deck {
