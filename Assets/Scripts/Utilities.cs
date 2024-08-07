@@ -46,6 +46,13 @@ namespace Poker {
             return num;
         }
 
+        public static double FormatMoney(double money) {
+            money *= Math.Pow(10, 2);
+            money = Math.Floor(money);
+            money /= Math.Pow(10, 2);
+            return money;
+        }
+
         public static int RandomInt(int min, int max) {
             return rng.NextInt(min, max + 1);
         }

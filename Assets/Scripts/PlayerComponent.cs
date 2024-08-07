@@ -21,6 +21,10 @@ public class PlayerComponent : MonoBehaviour {
         }
     }
 
+    public void UpdateUI() {
+        money.text = "$" + Player.Money;
+    }
+
     public IEnumerator DoTurn() {
         // TODO: Replace probability with folding frequency
         if (Utilities.TrueWithProbability(0.3f) && GameManager.instance.game.LastRaiser != null) {

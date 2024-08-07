@@ -63,7 +63,7 @@ namespace Poker {
         Call,
         Raise
     }
-    
+
     public class PlayerAction {
         private float _money;
         private ActionType _actionType;
@@ -72,7 +72,7 @@ namespace Poker {
             ActionType = actionType;
             Money = money;
         }
-        
+
         public float Money {
             get => _money;
             private set => _money = value;
@@ -111,7 +111,7 @@ namespace Poker {
 
         public double Money {
             get => _money;
-            set => _money = value;
+            set => _money = Utilities.FormatMoney(value);
         }
 
         public bool Folded {
@@ -151,7 +151,7 @@ namespace Poker {
             // Deck
             Deck = Utilities.NewDeck();
             Deck.Shuffle();
-            
+
             // Community Cards
             CommunityCards = Utilities.DeckTakeAmount(ref _deck, Utilities.RandomInt(3, 5));
             Utilities.ShowCards(ref _communityCards);
@@ -207,7 +207,7 @@ namespace Poker {
             get => _numPlayers;
             set => _numPlayers = value;
         }
-        
+
         public float Pot {
             get => _pot;
             set => _pot = value;

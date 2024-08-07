@@ -146,6 +146,8 @@ public class GameManager : MonoBehaviour {
                 yield return StartCoroutine(playerComponents[p].DoTurn());
             }
 
+            playerComponents[p].UpdateUI();
+            
             Debug.Log(p.Name + " " + Enum.GetName(typeof(ActionType), p.LastAction().ActionType) + ": " + p.LastAction().Money);
         }
 
