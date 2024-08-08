@@ -36,6 +36,7 @@ namespace Poker
             { Rank.King, "K" }
         };
 
+
         public static string RandomName()
         {
             return player_names[rng.NextInt(0, player_names.Count)];

@@ -149,6 +149,32 @@ public class GameManager : MonoBehaviour
             players.Add(new(Utilities.RandomName(), Utilities.DeckTakeTwo(ref deck), gameSettings.playerStartingMoney));
             game = new(gameSettings.numberOfPlayers, gameSettings.startingPotSize, deck, communityCards, user, gameSettings.userPosition, players);
         }
+        else if (gameSettings.backDoorFlushDraw)
+        {
+            List<Card> deck = Utilities.NewDeck();
+            deck.Shuffle();
+            List<Card> communityCards = null;
+            Player user = null;
+            List<Player> players = new();
+            communityCards = BluffCases.BackDoorFlushDrawCc(ref deck, gameSettings.communityCardSize);
+            user = new("You", BluffCases.BackDoorFlushDrawP(ref deck, communityCards), gameSettings.userStartingMoney);
+            Utilities.ShowCards(ref communityCards);
+            players.Add(new(Utilities.RandomName(), Utilities.DeckTakeTwo(ref deck), gameSettings.playerStartingMoney));
+            game = new(gameSettings.numberOfPlayers, gameSettings.startingPotSize, deck, communityCards, user, gameSettings.userPosition, players);
+        }
+        else if (gameSettings.straightDraw)
+        {
+            List<Card> deck = Utilities.NewDeck();
+            deck.Shuffle();
+            List<Card> communityCards = null;
+            Player user = null;
+            List<Player> players = new();
+            communityCards = BluffCases.StraightDrawCc(ref deck, gameSettings.communityCardSize);
+            user = new("You", BluffCases.StraightDrawP(ref deck, communityCards), gameSettings.userStartingMoney);
+            Utilities.ShowCards(ref communityCards);
+            players.Add(new(Utilities.RandomName(), Utilities.DeckTakeTwo(ref deck), gameSettings.playerStartingMoney));
+            game = new(gameSettings.numberOfPlayers, gameSettings.startingPotSize, deck, communityCards, user, gameSettings.userPosition, players);
+        }
 
         else if (gameSettings.randomGame)
         {

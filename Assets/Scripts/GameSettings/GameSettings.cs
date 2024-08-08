@@ -32,5 +32,9 @@ public class GameSettings : ScriptableObject
 
     public List<Card> customCommunityCards;
 
-    [Header("Scenarios")] public bool flushDraw;
+    [Header("Scenarios")]
+    public bool flushDraw;
+    public bool backDoorFlushDraw;
+    public bool straightDraw;
+
 }
