@@ -11,7 +11,8 @@ namespace Poker {
         Clubs,
         Diamonds,
         Hearts,
-        Spades
+        Spades,
+        Null
     }
 
     [Serializable]

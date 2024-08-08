@@ -4,7 +4,8 @@ using Poker;
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "NewGameSettings", menuName = "GameSettings", order = 1)]
-public class GameSettings : ScriptableObject {
+public class GameSettings : ScriptableObject
+{
     public string settingsName;
 
     [Header("User Settings")] public int userPosition;
@@ -26,6 +27,10 @@ public class GameSettings : ScriptableObject {
 
     [Header("Game Settings")] public bool randomGame;
     public long startingPotSize;
+    public int communityCardSize;
     public bool enableCustomCommunityCards;
+
     public List<Card> customCommunityCards;
+
+    [Header("Scenarios")] public bool flushDraw;
 }

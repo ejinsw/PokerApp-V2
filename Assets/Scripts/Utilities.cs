@@ -4,8 +4,10 @@ using System.Linq;
 using UnityEngine;
 using Random = Unity.Mathematics.Random;
 
-namespace Poker {
-    public static class Utilities {
+namespace Poker
+{
+    public static class Utilities
+    {
         public static Random rng = new Random((uint)Guid.NewGuid().GetHashCode());
 
         public static List<string> player_names = new List<string> {
@@ -34,29 +36,35 @@ namespace Poker {
             { Rank.King, "K" }
         };
 
-        public static string RandomName() {
+        public static string RandomName()
+        {
             return player_names[rng.NextInt(0, player_names.Count)];
         }
 
-        public static double RandomDouble(double min, double max, int cutoff = 2) {
+        public static double RandomDouble(double min, double max, int cutoff = 2)
+        {
             double num = rng.NextDouble(min, max);
             num *= Math.Pow(10, cutoff);
             num = Math.Floor(num);
             num /= Math.Pow(10, cutoff);
             return num;
         }
-        
-        public static int RandomInt(int min, int max) {
+
+        public static int RandomInt(int min, int max)
+        {
             return rng.NextInt(min, max + 1);
         }
 
-        public static bool TrueWithProbability(double p) {
+        public static bool TrueWithProbability(double p)
+        {
             return rng.NextDouble(0, 1) < p;
         }
 
-        public static void Shuffle<T>(this IList<T> list) {
+        public static void Shuffle<T>(this IList<T> list)
+        {
             int n = list.Count;
-            while (n > 1) {
+            while (n > 1)
+            {
                 n--;
                 int k = rng.NextInt(n + 1);
                 T value = list[k];
@@ -65,19 +73,24 @@ namespace Poker {
             }
         }
 
-        public static void PrintCards(List<Card> cards) {
+        public static void PrintCards(List<Card> cards)
+        {
             string msg = "";
-            foreach (Card c in cards) {
+            foreach (Card c in cards)
+            {
                 msg += Enum.GetName(typeof(Suit), c.Suit) + " " + Enum.GetName(typeof(Rank), c.Rank) + " ";
             }
 
             Debug.Log(msg);
         }
 
-        public static List<Card> NewDeck() {
+        public static List<Card> NewDeck()
+        {
             List<Card> deck = new();
-            foreach (Suit s in Enum.GetValues(typeof(Suit))) {
-                foreach (Rank r in Enum.GetValues(typeof(Rank))) {
+            foreach (Suit s in Enum.GetValues(typeof(Suit)))
+            {
+                foreach (Rank r in Enum.GetValues(typeof(Rank)))
+                {
                     deck.Add(new Card(s, r));
                 }
             }
@@ -85,7 +98,9 @@ namespace Poker {
             return deck;
         }
 
-        public static List<Card> DeckTakeOne(ref List<Card> deck) {
+
+        public static List<Card> DeckTakeOne(ref List<Card> deck)
+        {
             List<Card> cards = new();
             if (deck.Count <= 0) return cards;
 
@@ -95,27 +110,32 @@ namespace Poker {
             return cards;
         }
 
-        public static List<Card> DeckTakeTwo(ref List<Card> deck) {
+        public static List<Card> DeckTakeTwo(ref List<Card> deck)
+        {
             List<Card> cards = new();
             cards.AddRange(DeckTakeOne(ref deck));
             cards.AddRange(DeckTakeOne(ref deck));
             return cards;
         }
 
-        public static List<Card> DeckTakeAmount(ref List<Card> deck, int amount) {
+        public static List<Card> DeckTakeAmount(ref List<Card> deck, int amount)
+        {
             List<Card> cards = new();
-            for (int i = 0; i < amount; i++) {
+            for (int i = 0; i < amount; i++)
+            {
                 cards.AddRange(DeckTakeOne(ref deck));
             }
 
-            if (cards.Count < amount) {
+            if (cards.Count < amount)
+            {
                 Debug.LogWarning("Requested more cards than are available in the deck.");
             }
 
             return cards;
         }
 
-        public static List<Card> DeckTakeCards(ref List<Card> deck, List<Card> cards) {
+        public static List<Card> DeckTakeCards(ref List<Card> deck, List<Card> cards)
+        {
             List<int> indicesToRemove = new List<int>();
 
             for (int i = 0; i < cards.Count; i++)
@@ -141,17 +161,62 @@ namespace Poker {
             return cards;
         }
 
-        public static List<Card> HandSuited(ref List<Card> deck) {
+        public static List<Card> HandSuited(ref List<Card> deck, Suit suit = Suit.Null)
+        {
+            if (deck.Count < 2) return null;
+            if (suit != Suit.Null)
+            {
+                List<Card> cards = new();
+                for (int i = 0; i < 2; i++)
+                {
+                    for (int j = 0; j < deck.Count; j++)
+                    {
+                        if (deck[j].Suit == suit && cards.Count != 0 && deck[j] != cards[0] || deck[j].Suit == suit && cards.Count == 0)
+                        {
+                            cards.Add(deck[j]);
+                            break;
+                        }
+                    }
+                }
+                return DeckTakeCards(ref deck, cards); ;
+            }
+            else
+            {
+                for (int i = 0; i < deck.Count; i++)
+                {
+                    List<Card> cards = new();
+                    cards.Add(deck[i]);
+
+                    if (cards.Count < 1) return null;
+
+                    for (int j = i + 1; j < deck.Count; j++)
+                    {
+                        if (deck[j].Suit == cards[0].Suit)
+                        {
+                            cards.Add(deck[j]);
+                            return DeckTakeCards(ref deck, cards);
+                        }
+                    }
+                }
+            }
+            return null;
+        }
+
+        public static List<Card> HandPaired(ref List<Card> deck)
+        {
             if (deck.Count < 2) return null;
 
-            for (int i = 0; i < deck.Count; i++) {
+            for (int i = 0; i < deck.Count; i++)
+            {
                 List<Card> cards = new();
                 cards.Add(deck[i]);
-                
+
                 if (cards.Count < 1) return null;
 
-                for (int j = i + 1; j < deck.Count; j++) {
-                    if (deck[j].Suit == cards[0].Suit) {
+                for (int j = i + 1; j < deck.Count; j++)
+                {
+                    if (deck[j].Rank == cards[0].Rank)
+                    {
                         cards.Add(deck[j]);
                         return DeckTakeCards(ref deck, cards);
                     }
@@ -161,43 +226,29 @@ namespace Poker {
             return null;
         }
 
-        public static List<Card> HandPaired(ref List<Card> deck) {
-            if (deck.Count < 2) return null;
-
-            for (int i = 0; i < deck.Count; i++) {
-                List<Card> cards = new();
-                cards.Add(deck[i]);
-
-                if (cards.Count < 1) return null;
-
-                for (int j = i + 1; j < deck.Count; j++) {
-                    if (deck[j].Rank == cards[0].Rank) {
-                        cards.Add(deck[j]);
-                        return DeckTakeCards(ref deck, cards);
-                    }
-                }
-            }
-
-            return null;
-        }
-
-        public static void ShowCards(ref List<Card> cards) {
-            foreach (Card c in cards) {
+        public static void ShowCards(ref List<Card> cards)
+        {
+            foreach (Card c in cards)
+            {
                 c.Visible = true;
             }
         }
 
-        public static bool AllResponded(Player lastRaiser, List<Player> players) {
-            foreach (Player p in players) {
+        public static bool AllResponded(Player lastRaiser, List<Player> players)
+        {
+            foreach (Player p in players)
+            {
                 if (p.Folded) continue; // folders ok
                 if (p.LastAction() == null) return false; // null if haven't gone yet
 
                 // Not everyone called/folded to a raise
-                if (lastRaiser != null) {
+                if (lastRaiser != null)
+                {
                     if (lastRaiser == p) continue; // skip last raiser
                     if (p.LastAction().ActionType != ActionType.Fold
                         && p.LastAction().ActionType != ActionType.Call
-                        || p.LastAction().Money < lastRaiser.LastAction().Money) {
+                        || p.LastAction().Money < lastRaiser.LastAction().Money)
+                    {
                         return false;
                     }
                 }
