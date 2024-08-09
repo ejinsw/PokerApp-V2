@@ -254,6 +254,121 @@ namespace Poker
             }
             return cards;
         }
+        public static List<Card> BackDoorStraightDrawCc(ref List<Card> deck, int size)
+        {
+            List<Card> cards = new();
+            int rand = Utilities.RandomInt(1, 9);
+            int pos1 = Utilities.RandomInt(0, size - 1);
+            int pos2;
+            int pos3 = 0;
+            do
+            {
+                pos2 = Utilities.RandomInt(0, size - 1);
+            } while (pos1 == pos2);
+            for (int i = 0; i < size; i++)
+            {
+                if (i != pos1 && i != pos2)
+                {
+                    pos3 = i;
+                    break;
+                }
+            }
+            Rank r = (Rank)rand;
+            for (int i = 0; i < size; i++)
+            {
+                if (i == pos1)
+                {
+                    foreach (Card c in deck)
+                    {
+                        if (c.Rank == r)
+                        {
+                            cards.Add(c);
+                            Utilities.DeckTakeCards(ref deck, cards);
+                            break;
+                        }
+                    }
+                }
+                else if (i == pos2)
+                {
+                    foreach (Card c in deck)
+                    {
+                        if (c.Rank == r + 1)
+                        {
+                            cards.Add(c);
+                            Utilities.DeckTakeCards(ref deck, cards);
+                            break;
+                        }
+                    }
+                }
+                else if (i == pos3)
+                {
+                    foreach (Card c in deck)
+                    {
+                        if (c.Rank == r + 2)
+                        {
+                            cards.Add(c);
+                            Utilities.DeckTakeCards(ref deck, cards);
+                            break;
+                        }
+                    }
+                }
+                else
+                {
+                    foreach (Card c in deck)
+                    {
+                        if (c.Rank != r + 3 && c.Rank != r - 1 && c.Rank != r + 4 && c.Rank != r - 2)
+                        {
+                            cards.Add(c);
+                            Utilities.DeckTakeCards(ref deck, cards);
+                            break;
+                        }
+                    }
+                }
+
+            }
+            return cards;
+        }
+
+        public static List<Card> BackDoorStraightDrawP(ref List<Card> deck, List<Card> cc)
+        {
+            if (cc.Count == 0)
+            {
+                return null;
+            }
+            List<Card> cards = new();
+            int min = 0;
+            List<Card> sortedCards = cc.OrderBy(card => card.Rank).ToList();
+            min = sortedCards[0].Rank == (sortedCards[1].Rank - 1) ? (int)sortedCards[0].Rank
+                : (int)sortedCards[1].Rank;
+            if (min == 1 || min == 0)
+            {
+                min += 3;
+            }
+            else
+            {
+                min += Utilities.RandomInt(0, 1) == 1 ? 3 : -1;
+            }
+            foreach (Card c in deck)
+            {
+                if ((int)c.Rank == min)
+                {
+                    cards.Add(c);
+                    Utilities.DeckTakeCards(ref deck, cards);
+                    break;
+                }
+            }
+            foreach (Card c in deck)
+            {
+                if ((int)c.Rank != min - 1 && (int)c.Rank != min + 1 && (int)c.Rank != min + 4 && (int)c.Rank != min - 4)
+                {
+                    cards.Add(c);
+                    Utilities.DeckTakeCards(ref deck, cards);
+                    break;
+                }
+            }
+            return cards;
+        }
+
         #endregion
     }
 }
