@@ -19,7 +19,8 @@ namespace Poker {
             StraightDrawOpen,
             StraightDrawClosed,
             GutShot,
-            FlushDraw
+            BackdoorFlushDraw,
+            FlushDraw,
         }
 
         public static List<BluffCase> GetAllBluffCases(List<Card> cards) {
@@ -42,6 +43,8 @@ namespace Poker {
             
             if (IsFullHouse(cards))
                 bluffCases.Add(BluffCase.FullHouse);
+            if (IsBackdoorFlushDraw(cards))
+                bluffCases.Add(BluffCase.BackdoorFlushDraw);
             
             if (IsFlushDraw(cards))
                 bluffCases.Add(BluffCase.FlushDraw);
@@ -59,7 +62,7 @@ namespace Poker {
             return bluffCases;
         }
 
-        private static bool IsFlushDraw(List<Card> cards) {
+        public static bool IsFlushDraw(List<Card> cards) {
             // There aren't enough cards
             if (cards.Count < 4) {
                 return false;
@@ -71,13 +74,24 @@ namespace Poker {
 
             return suitGroups.Any(); // True the enumerable isn't empty a four-card flush draw
         }
+        public static bool IsBackdoorFlushDraw(List<Card> cards) {
+            // There aren't enough cards
+            if (cards.Count < 3) {
+                return false;
+            }
+
+            IEnumerable<IGrouping<Suit, Card>> suitGroups = cards.GroupBy(card => card.Suit)
+                .Where(group => group.Count() == 3);
+
+            return suitGroups.Any(); // True the enumerable isn't empty a four-card flush draw
+        }
 
         private static bool IsNeighborRank(Rank a, Rank b) {
             // King - Ace is 12 - 0
             return Mathf.Abs((int)a - (int)b) == 1 || Mathf.Abs((int)a - (int)b) == 12;
         }
 
-        private static bool IsStraightDrawClosed(List<Card> cards) {
+        public static bool IsStraightDrawClosed(List<Card> cards) {
             // There aren't enough cards
             if (cards.Count < 4) {
                 return false;
@@ -105,7 +119,7 @@ namespace Poker {
             return false;
         }
 
-        private static bool IsStraightDrawOpen(List<Card> cards) {
+        public static bool IsStraightDrawOpen(List<Card> cards) {
             // There aren't enough cards
             if (cards.Count < 4) {
                 return false;
@@ -133,7 +147,7 @@ namespace Poker {
             return false;
         }
 
-        private static bool IsGutshot(List<Card> cards) {
+        public static bool IsGutshot(List<Card> cards) {
             // There aren't enough cards
             if (cards.Count < 4) {
                 return false;
@@ -144,17 +158,16 @@ namespace Poker {
             if (ranks.Count < 4) {
                 return false;
             }
+            
+            IEnumerable<IGrouping<int, Rank>> neighbors = ranks
+                .Select((rank, index) => new { Rank = rank, GroupKey = (int)rank - index })
+                .GroupBy(x => x.GroupKey, x => x.Rank);
 
-            List<Tuple<Rank, Rank>> neighbors = new();
-            for (int i = 0; i < ranks.Count - 1; i++) {
-                if (IsNeighborRank(ranks[i], ranks[i + 1])) {
-                    Tuple<Rank, Rank> pair = new Tuple<Rank, Rank>(ranks[i], ranks[i + 1]);
-                    neighbors.Add(pair);
-                }
-            }
-
-            if (neighbors.Count == 2) {
-                if (IsNeighborRank(neighbors[0].Item2 + 1, neighbors[1].Item1)) {
+            if (neighbors.Count() == 2) {
+                List<Rank> firstGroup = neighbors.First().ToList();
+                List<Rank> secondGroup = neighbors.Last().ToList();
+                
+                if (IsNeighborRank(firstGroup.Last() + 1, secondGroup.First())) {
                     return true;
                 }
             }
