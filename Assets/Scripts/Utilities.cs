@@ -88,8 +88,8 @@ namespace Poker
         public static List<Card> NewDeck()
         {
             List<Card> deck = new();
-            foreach (Suit s in Enum.GetValues(typeof(Suit)))
-            {
+            foreach (Suit s in Enum.GetValues(typeof(Suit))) {
+                if (s == Suit.Null) continue;
                 foreach (Rank r in Enum.GetValues(typeof(Rank)))
                 {
                     deck.Add(new Card(s, r));
@@ -105,7 +105,8 @@ namespace Poker
             List<Card> cards = new();
             if (deck.Count <= 0) return cards;
 
-            cards.Add(deck[0]);
+            Debug.Log($"Removing {deck[0].Rank} {deck[0].Suit} from the deck");
+            cards.Add(deck[0].Clone());
             deck.RemoveAt(0);
 
             return cards;
@@ -137,27 +138,9 @@ namespace Poker
 
         public static List<Card> DeckTakeCards(ref List<Card> deck, List<Card> cards)
         {
-            List<int> indicesToRemove = new List<int>();
+            HashSet<Card> cardsToRemove = new HashSet<Card>(cards);
 
-            for (int i = 0; i < cards.Count; i++)
-            {
-                for (int j = 0; j < deck.Count; j++)
-                {
-                    if (cards[i].Equals(deck[j]))
-                    {
-                        indicesToRemove.Add(j);
-                        break;
-                    }
-                }
-            }
-
-            // Remove cards from the deck starting from the highest index to
-            // prevent out of bounds error
-            indicesToRemove.Sort((a, b) => b.CompareTo(a));
-            foreach (int index in indicesToRemove)
-            {
-                deck.RemoveAt(index);
-            }
+            deck = deck.Where(card => !cardsToRemove.Contains(card)).ToList();
 
             return cards;
         }

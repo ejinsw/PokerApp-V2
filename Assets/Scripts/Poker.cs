@@ -36,7 +36,7 @@ namespace Poker
     }
 
     [Serializable]
-    public class Card : ICloneable
+    public class Card 
     {
         [SerializeField] private Suit _suit;
         [SerializeField] private Rank _rank;
@@ -66,6 +66,13 @@ namespace Poker
             _rank = rank;
             _visible = visible;
         }
+        
+        public Card(Card card)
+        {
+            _suit = card.Suit;
+            _rank = card.Rank;
+            _visible = card.Visible;
+        }
 
         public Suit Suit
         {
@@ -85,9 +92,9 @@ namespace Poker
             set => _visible = value;
         }
 
-        public object Clone()
+        public Card Clone()
         {
-            return new Card(_suit, _rank, _visible);
+            return new Card(this);
         }
 
     }
@@ -103,7 +110,7 @@ namespace Poker
     }
 
     [Serializable]
-    public class PlayerAction : ICloneable
+    public class PlayerAction 
     {
         [SerializeField] private long _money;
         [SerializeField] private ActionType _actionType;
@@ -112,6 +119,12 @@ namespace Poker
         {
             _actionType = actionType;
             _money = money;
+        }
+        
+        public PlayerAction(PlayerAction other)
+        {
+            _actionType = other.ActionType;
+            _money = other.Money;
         }
 
         public long Money
@@ -126,14 +139,14 @@ namespace Poker
             private set => _actionType = value;
         }
 
-        public object Clone()
+        public PlayerAction Clone()
         {
-            return new PlayerAction(_actionType, _money);
+            return new PlayerAction(this);
         }
     }
 
     [Serializable]
-    public class Player : ICloneable
+    public class Player 
     {
         [SerializeField] private string _name;
         [SerializeField] private List<Card> _cards;
@@ -150,6 +163,16 @@ namespace Poker
             _folded = folded;
             _actionLog = actionLog ?? new List<PlayerAction>();
             this.next = next;
+        }
+        
+        public Player(Player other)
+        {
+            _name = other.Name;
+            _cards = other.Cards.Select(card => card.Clone()).ToList();
+            _money = other.Money;
+            _folded = other.Folded;
+            _actionLog = other.ActionLog.Select(action => action.Clone()).ToList();
+            next = other.next;
         }
 
         public string Name
@@ -200,10 +223,9 @@ namespace Poker
             Money -= amount;
         }
 
-        public object Clone()
+        public Player Clone()
         {
-            return new Player(_name, _cards.Select(card => (Card)card.Clone()).ToList(),
-                _money, _folded, _actionLog.Select(action => (PlayerAction)action.Clone()).ToList(), next);
+            return new Player(this);
         }
     }
 
@@ -228,7 +250,7 @@ namespace Poker
             // Deck
             Deck = Utilities.NewDeck();
             Deck.Shuffle();
-
+            
             // Community Cards
             CommunityCards = Utilities.DeckTakeAmount(ref _deck, Utilities.RandomInt(3, 5));
             Utilities.ShowCards(ref _communityCards);
@@ -262,9 +284,9 @@ namespace Poker
             LastRaiser = null;
             NumPlayers = numPlayers;
             Pot = potSize;
-            Deck = deck;
-            CommunityCards = communityCards;
-            Players = players;
+            Deck = deck.Select(card => card.Clone()).ToList();
+            CommunityCards = communityCards.Select(card => card.Clone()).ToList();
+            Players = players.Select(player => player.Clone()).ToList();
             User = user;
 
             List<Card> userCards = User.Cards;
