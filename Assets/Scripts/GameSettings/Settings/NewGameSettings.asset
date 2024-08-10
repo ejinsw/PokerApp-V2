@@ -56,6 +56,10 @@ MonoBehaviour:
   - _suit: 3
     _rank: 10
     _visible: 1
+  - _suit: 3
+    _rank: 10
+    _visible: 1
   flushDraw: 0
   backDoorFlushDraw: 0
-  straightDraw: 1
+  straightDraw: 0
+  gutShot: 1

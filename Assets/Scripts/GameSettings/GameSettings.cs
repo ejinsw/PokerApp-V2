@@ -36,5 +36,10 @@ public class GameSettings : ScriptableObject
     public bool flushDraw;
     public bool backDoorFlushDraw;
     public bool straightDraw;
+    public bool gutShot;
+    public bool underPair;
+    public bool overPair;
+
+    public bool straightFlushDraw;
 
 }
