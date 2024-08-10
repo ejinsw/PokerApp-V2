@@ -15,32 +15,33 @@ namespace Poker
         {
             None,
             Pair,
+            UnderPair,
+            OverPair,
             DoublePair,
             Triples,
             FourOfAKind,
             FullHouse,
-            StraightDrawOpen,
-            StraightDrawClosed,
+            StraightDraw,
             GutShot,
             BackdoorFlushDraw,
             FlushDraw,
+            StraightFlushDraw,
         }
 
-        public static List<BluffCase> GetAllBluffCases(List<Card> cards)
-        {
+        public static List<BluffCase> GetAllBluffCases(List<Card> cc, List<Card> hand) {
+            List<Card> cards = new List<Card>(cc);
+            cards.AddRange(hand);
+            
             List<BluffCase> bluffCases = new();
 
-            if (NumberOfPairs(cards) != 0)
-            {
-                if (NumberOfPairs(cards) == 1)
-                {
-                    bluffCases.Add(BluffCase.Pair);
-                }
-                else
-                {
-                    bluffCases.Add(BluffCase.DoublePair);
-                }
-            }
+            if (IsUnderPair(cc, hand))
+                bluffCases.Add(BluffCase.UnderPair);
+            
+            if (IsOverPair(cc, hand))
+                bluffCases.Add(BluffCase.OverPair);
+            
+            if (NumberOfPairs(cards) == 2)
+                bluffCases.Add(BluffCase.DoublePair);
 
             if (IsTriples(cards))
                 bluffCases.Add(BluffCase.Triples);
@@ -50,21 +51,21 @@ namespace Poker
 
             if (IsFullHouse(cards))
                 bluffCases.Add(BluffCase.FullHouse);
-            if (IsBackdoorFlushDraw(cards))
+            
+            if (IsBackdoorFlushDraw(cards) && !IsStraightFlushDraw(cards))
                 bluffCases.Add(BluffCase.BackdoorFlushDraw);
 
-            if (IsFlushDraw(cards))
+            if (IsFlushDraw(cards) && !IsStraightFlushDraw(cards))
                 bluffCases.Add(BluffCase.FlushDraw);
 
-            if (IsStraightDrawOpen(cards))
-                bluffCases.Add(BluffCase.StraightDrawOpen);
-
-            if (IsStraightDrawClosed(cards))
-                bluffCases.Add(BluffCase.StraightDrawClosed);
-
+            if (IsStraightDraw(cards) && !IsStraightFlushDraw(cards))
+                bluffCases.Add(BluffCase.StraightDraw);
+            
             if (IsGutshot(cards))
                 bluffCases.Add(BluffCase.GutShot);
 
+            if (IsStraightFlushDraw(cards))
+                bluffCases.Add(BluffCase.StraightFlushDraw);
 
             return bluffCases;
         }
@@ -102,8 +103,8 @@ namespace Poker
             // King - Ace is 12 - 0
             return Mathf.Abs((int)a - (int)b) == 1 || Mathf.Abs((int)a - (int)b) == 12;
         }
-
-        public static bool IsStraightDrawClosed(List<Card> cards)
+        
+        public static bool IsStraightDraw(List<Card> cards)
         {
             // There aren't enough cards
             if (cards.Count < 4)
@@ -122,21 +123,11 @@ namespace Poker
                 .Select((rank, index) => new { Rank = rank, GroupKey = (int)rank - index })
                 .GroupBy(x => x.GroupKey, x => x.Rank)
                 .Where(group => group.Count() == 4);
-
-            foreach (var g in rankGroups)
-            {
-                List<Rank> group = g.ToList();
-
-                if (g.First() == Rank.Ace || g.Last() == Rank.Ace)
-                {
-                    return true;
-                }
-            }
-
-            return false;
+            
+            return rankGroups.Any();
         }
-
-        public static bool IsStraightDrawOpen(List<Card> cards)
+        
+        public static bool IsStraightFlushDraw(List<Card> cards)
         {
             // There aren't enough cards
             if (cards.Count < 4)
@@ -144,29 +135,43 @@ namespace Poker
                 return false;
             }
 
-            List<Rank> ranks = cards.Select(card => card.Rank).Distinct().OrderBy(rank => rank).ToList();
-            // Only consider the first 4 distinct ranks
-            if (ranks.Count < 4)
-            {
-                return false;
-            }
+            return IsStraightDraw(cards) && (IsFlushDraw(cards) || IsBackdoorFlushDraw(cards));
 
-            IEnumerable<IGrouping<int, Rank>> rankGroups = ranks
-                .Select((rank, index) => new { Rank = rank, GroupKey = (int)rank - index })
-                .GroupBy(x => x.GroupKey, x => x.Rank)
-                .Where(group => group.Count() == 4);
-
-            foreach (var g in rankGroups)
-            {
-                List<Rank> group = g.ToList();
-
-                if (g.First() != Rank.Ace && g.Last() != Rank.Ace)
-                {
-                    return true;
-                }
-            }
-
-            return false;
+            // // This Checks for a straight flush draw not a "straight draw" + "flush draw"
+            // var suitGroups = cards.GroupBy(card => card.Suit).ToList();
+            //
+            // foreach (var suitGroup in suitGroups)
+            // {
+            //     if (suitGroup.Count() < 4)
+            //     {
+            //         continue;
+            //     }
+            //
+            //     List<Rank> ranks = suitGroup.Select(card => card.Rank).Distinct().OrderBy(rank => rank).ToList();
+            //
+            //     // Only consider the first 4 distinct ranks
+            //     if (ranks.Count < 4)
+            //     {
+            //         continue;
+            //     }
+            //
+            //     IEnumerable<IGrouping<int, Rank>> rankGroups = ranks
+            //         .Select((rank, index) => new { Rank = rank, GroupKey = (int)rank - index })
+            //         .GroupBy(x => x.GroupKey, x => x.Rank)
+            //         .Where(group => group.Count() == 4);
+            //
+            //     foreach (var g in rankGroups)
+            //     {
+            //         List<Rank> group = g.ToList();
+            //
+            //         if (g.First() != Rank.Ace && g.Last() != Rank.Ace)
+            //         {
+            //             return true;
+            //         }
+            //     }
+            // }
+            //
+            // return false;
         }
 
         public static bool IsGutshot(List<Card> cards)
@@ -207,7 +212,23 @@ namespace Poker
             var ranks = cards.Select(card => card.Rank).GroupBy(rank => rank).Where(group => group.Count() == 2);
             return ranks.Count();
         }
+        
+        public static bool IsUnderPair(List<Card> cc, List<Card> hand) {
+            if (NumberOfPairs(hand) == 0) return false;
 
+            List<Card> orderedCC = cc.OrderBy(card => card.Rank).Distinct().ToList();
+
+            return hand[0].Rank < orderedCC[0].Rank;
+        }
+        
+        public static bool IsOverPair(List<Card> cc, List<Card> hand) {
+            if (NumberOfPairs(hand) == 0) return false;
+
+            List<Card> orderedCC = cc.OrderBy(card => card.Rank).Distinct().ToList();
+
+            return hand[0].Rank > orderedCC.Last().Rank;
+        }
+        
         public static bool IsTriples(List<Card> cards)
         {
             var ranks = cards.Select(card => card.Rank).GroupBy(rank => rank).Where(group => group.Count() == 3);
@@ -234,6 +255,68 @@ namespace Poker
 
         #region Scenarios
 
+        public static List<Card> ScenarioCC(BluffCase scenario, ref List<Card> deck, int size) {
+            List<Card> cc = new();
+            switch (scenario) {
+                case BluffCase.None:
+                    break;
+                case BluffCase.UnderPair:
+                    cc = UnderPairCc(ref deck, size);
+                    break;
+                case BluffCase.OverPair:
+                    cc = OverPairCc(ref deck, size);
+                    break;
+                case BluffCase.StraightDraw:
+                    cc = StraightDrawCc(ref deck, size);
+                    break;
+                case BluffCase.GutShot:
+                    cc = StraightDrawCc(ref deck, size);
+                    break;
+                case BluffCase.BackdoorFlushDraw:
+                    cc = BackDoorFlushDrawCc(ref deck, size);
+                    break;
+                case BluffCase.FlushDraw:
+                    cc = FlushDrawCc(ref deck, size);
+                    break;
+                case BluffCase.StraightFlushDraw:
+                    cc = StraightDrawCc(ref deck, size);
+                    break;
+            }
+
+            return cc;
+        }
+        
+        public static List<Card> ScenarioP(BluffCase scenario, ref List<Card> deck, List<Card> cc) {
+            List<Card> cards = new();
+            switch (scenario) {
+                case BluffCase.None:
+                    break;
+                case BluffCase.UnderPair:
+                    cards = UnderPairP(ref deck, cc);
+                    break;
+                case BluffCase.OverPair:
+                    cards = OverPairP(ref deck, cc);
+                    break;
+                case BluffCase.StraightDraw:
+                    cards = StraightDrawP(ref deck, cc);
+                    break;
+                case BluffCase.GutShot:
+                    cards = GutShotP(ref deck, cc);
+                    break;
+                case BluffCase.BackdoorFlushDraw:
+                    cards = BackDoorFlushDrawP(ref deck, cc);
+                    break;
+                case BluffCase.FlushDraw:
+                    cards = FlushDrawP(ref deck, cc);
+                    break;
+                case BluffCase.StraightFlushDraw:
+                    cards = StraightFlushDrawP(ref deck, cc);
+                    break;
+            }
+
+            return cards;
+        }
+        
         public static List<Card> FlushDrawCc(ref List<Card> deck, int size)
         {
             List<Card> cards = Utilities.HandSuited(ref deck);

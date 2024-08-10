@@ -61,13 +61,16 @@ namespace Poker
             return rng.NextDouble(0, 1) < p;
         }
 
-        public static void Shuffle<T>(this IList<T> list)
-        {
+        public static void Shuffle<T>(this IList<T> list) {
+            // To ensure random shuffle every time
+            int seed = Environment.TickCount;
+            Random shuffleRng = new Random((uint)seed);
+            
             int n = list.Count;
             while (n > 1)
             {
                 n--;
-                int k = rng.NextInt(n + 1);
+                int k = shuffleRng.NextInt(n + 1);
                 T value = list[k];
                 list[k] = list[n];
                 list[n] = value;
@@ -105,7 +108,6 @@ namespace Poker
             List<Card> cards = new();
             if (deck.Count <= 0) return cards;
 
-            Debug.Log($"Removing {deck[0].Rank} {deck[0].Suit} from the deck");
             cards.Add(deck[0].Clone());
             deck.RemoveAt(0);
 
@@ -143,6 +145,19 @@ namespace Poker
             deck = deck.Where(card => !cardsToRemove.Contains(card)).ToList();
 
             return cards;
+        }
+
+        public static bool DeckInsert(ref List<Card> deck, ref List<Card> toInsert) {
+            bool alreadyHas = false;
+            foreach (Card c in toInsert) {
+                if (deck.Contains(c)) {
+                    alreadyHas = true;
+                    continue;
+                }
+                deck.Add(c);
+            }
+            toInsert.Clear();
+            return !alreadyHas;
         }
 
         public static List<Card> HandSuited(ref List<Card> deck, Suit suit = Suit.Null)

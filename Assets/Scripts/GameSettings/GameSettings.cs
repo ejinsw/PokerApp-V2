@@ -32,14 +32,5 @@ public class GameSettings : ScriptableObject
 
     public List<Card> customCommunityCards;
 
-    [Header("Scenarios")]
-    public bool flushDraw;
-    public bool backDoorFlushDraw;
-    public bool straightDraw;
-    public bool gutShot;
-    public bool underPair;
-    public bool overPair;
-
-    public bool straightFlushDraw;
-
+    [Header("Scenarios")] public BluffCases.BluffCase scenario;
 }
