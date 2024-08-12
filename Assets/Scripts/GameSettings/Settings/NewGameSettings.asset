@@ -45,7 +45,7 @@ MonoBehaviour:
   randomGame: 0
   startingPotSize: 123
   communityCardSize: 4
-  enableCustomCommunityCards: 1
+  enableCustomCommunityCards: 0
   customCommunityCards:
   - _suit: 2
     _rank: 0
@@ -59,7 +59,4 @@ MonoBehaviour:
   - _suit: 3
     _rank: 10
     _visible: 1
-  flushDraw: 0
-  backDoorFlushDraw: 0
-  straightDraw: 0
-  gutShot: 1
+  scenario: 3

@@ -262,24 +262,24 @@ namespace Poker
             return true;
         }
 
-        public static int HandEquity(BluffCases.BluffCase a, int n)
+        public static int HandEquity(BluffCases.BluffCase a, int numCc)
         {
             switch (a)
             {
                 case BluffCases.BluffCase.FlushDraw:
-                    return n == 3 ? 36 : 18;
+                    return numCc == 3 ? 36 : 18;
                 case BluffCases.BluffCase.BackdoorFlushDraw:
                     return 4;
                 case BluffCases.BluffCase.OverPair:
-                    return n == 3 ? 70 : 80;
+                    return numCc == 3 ? 70 : 80;
                 case BluffCases.BluffCase.UnderPair:
-                    return n == 3 ? 8 : 4;
+                    return numCc == 3 ? 8 : 4;
                 case BluffCases.BluffCase.StraightDraw:
-                    return n == 3 ? 32 : 17;
+                    return numCc == 3 ? 32 : 17;
                 case BluffCases.BluffCase.GutShot:
-                    return n == 3 ? 17 : 9;
+                    return numCc == 3 ? 17 : 9;
                 case BluffCases.BluffCase.StraightFlushDraw:
-                    return n == 3 ? 54 : 33;
+                    return numCc == 3 ? 54 : 33;
                 default:
                     return 0;
             }
@@ -290,37 +290,37 @@ namespace Poker
             return (int)Math.Round(equityNeeded * 100);
         }
 
-        struct Statistics {
-            public int callEv;
-            public int reraiseEv;
-            public int reraiseAmount;
+        public class Statistics {
+            public int callEv = 0;
+            public int reraiseEv = 0;
+            public int reraiseAmount = 0;
         }
         
-        public static int[] Options(int handEquity, int pot, int raise)
+        public static Statistics Options(int handEquity, int pot, int raise)
         {
             //result[call EV, reraise EV, optimal reraiseAmount]
             //reraiseAmount is the totla money player puts into pot
-            int[] result = new int[3];
+            Statistics result = new();
             if (handEquity >= 50)
             {
-                result[0] = (int)Math.Round((double)pot / 2);
-                result[1] = (int)Math.Round((double)pot / 2);
-                result[2] = raise * 2;
+                result.callEv = (int)Math.Round((double)pot / 2);
+                result.reraiseEv = (int)Math.Round((double)pot / 2);
+                result.reraiseAmount = raise * 2;
                 return result;
             }
             else
             {
                 double equityFactor = handEquity / 100.0f;
                 int callEV = (int)Math.Round(equityFactor * (pot + raise) - raise * (1.0f - equityFactor));
-                result[0] = callEV;
+                result.callEv = callEV;
                 double reraiseAmount = (double)(pot * equityFactor) / (1.0f - 2 * equityFactor);
                 if (reraiseAmount < raise)
                 {
                     reraiseAmount = raise * 2;
                 }
                 int raiseEV = (int)Math.Round(equityFactor * (pot + reraiseAmount * 2) - reraiseAmount);
-                result[1] = raiseEV;
-                result[2] = (int)Math.Round(reraiseAmount);
+                result.reraiseEv = raiseEV;
+                result.reraiseAmount = (int)Math.Round(reraiseAmount);
                 return result;
             }
         }

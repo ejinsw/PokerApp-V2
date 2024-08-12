@@ -136,11 +136,20 @@ public class GameManager : MonoBehaviour {
             Utilities.ShowCards(ref communityCards);
             user = new("You", BluffCases.ScenarioP(scenario, ref deck, communityCards), gameSettings.userStartingMoney);
 
-            players.Add(new(Utilities.RandomName(), Utilities.DeckTakeTwo(ref deck), gameSettings.playerStartingMoney));
+            if (gameSettings.enableCustomPlayerList) {
+                players = gameSettings.customPlayerList.Select(player => player.Clone()).ToList();
+
+                foreach (Player p in players) {
+                    Utilities.DeckTakeCards(ref deck, p.Cards);
+                }
+            }
+            else {
+                players.Add(new(Utilities.RandomName(), Utilities.DeckTakeTwo(ref deck), gameSettings.playerStartingMoney));
+            }
 
             // Check bluff cases
             bluffCases = BluffCases.GetAllBluffCases(communityCards, user.Cards);
-            
+
             if (bluffCases.Contains(scenario) && bluffCases.Count == 1) {
                 attempts = 0;
                 break;
@@ -153,11 +162,11 @@ public class GameManager : MonoBehaviour {
             players.Clear();
             deck = Utilities.NewDeck();
             deck.Shuffle();
-            
+
             communityCards = new List<Card>(Utilities.DeckTakeCards(ref deck, gameSettings.customCommunityCards));
             Utilities.ShowCards(ref communityCards);
             user = new("You", Utilities.DeckTakeCards(ref deck, gameSettings.customUserHand), gameSettings.userStartingMoney);
-            
+
             players.Add(new(Utilities.RandomName(), Utilities.DeckTakeTwo(ref deck), gameSettings.playerStartingMoney));
         }
 
@@ -254,7 +263,7 @@ public class GameManager : MonoBehaviour {
         }
 
         #endregion
-        
+
         List<BluffCases.BluffCase> bluffCases = BluffCases.GetAllBluffCases(game.CommunityCards, game.User.Cards);
         foreach (BluffCases.BluffCase b in bluffCases) {
             Debug.Log(Enum.GetName(typeof(BluffCases.BluffCase), b));
@@ -345,7 +354,7 @@ public class GameManager : MonoBehaviour {
 
         // game.LastRaiser = null;
 
-        
+
         ResultsManager.instance.InitializeResults(game, gameSettings);
         yield return null;
     }

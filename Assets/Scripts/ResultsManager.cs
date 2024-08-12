@@ -58,20 +58,20 @@ public class ResultsManager : MonoBehaviour {
             GameManager.instance.CreateCard(c, cardPrefab, communityCards, 1.6f);
         }
 
-        int handEq = Utilities.HandEquity(gameSettings.scenario, 0);
+        int handEq = Utilities.HandEquity(gameSettings.scenario, game.CommunityCards.Count);
         int potOddsRatio = Utilities.PotOdds((int)game.Pot, (int)game.Players[0].LastAction().Money);
-        List<int> options = Utilities.Options(handEq, (int)game.Pot, (int)game.Players[0].LastAction().Money).ToList();
+        Utilities.Statistics results = Utilities.Options(handEq, (int)game.Pot, (int)game.Players[0].LastAction().Money);
 
         pot.text = $"Pot: ${game.Pot}";
         handEquity.text = $"Hand Equity: ${handEq}";
-        villainFoldEquity.text = $"Villain Fold Equity: $";
+        villainFoldEquity.text = $"Villain Fold Equity: $0";
         villainRaise.text = $"Villain Raise: ${game.Players[0].LastAction().Money}";
         potOdds.text = $"Pot Odds: 1:{potOddsRatio}";
         userAction.text = $"You Chose: {Enum.GetName(typeof(ActionType), game.User.LastAction().ActionType)}";
-        userEv.text = $"User EV: $";
-        foldEv.text = $"${options[0]}";
-        callEv.text = $"${options[1]}";
-        reraiseEv.text = $"${options[2]}";
+        userEv.text = $"User EV: $TBA"; // TODO: Update this
+        foldEv.text = $"$0";
+        callEv.text = $"${results.callEv}";
+        reraiseEv.text = $"${results.reraiseEv}";
 
         resultsScreen.SetActive(true);
     }
