@@ -345,6 +345,8 @@ public class GameManager : MonoBehaviour {
 
         // game.LastRaiser = null;
 
+        
+        ResultsManager.instance.InitializeResults(game, gameSettings);
         yield return null;
     }
 

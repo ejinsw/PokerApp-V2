@@ -262,9 +262,8 @@ namespace Poker
             return true;
         }
 
-        public static int HandEquity(int n)
+        public static int HandEquity(BluffCases.BluffCase a, int n)
         {
-            BluffCases.BluffCase a = BluffCases.BluffCase.None;
             switch (a)
             {
                 case BluffCases.BluffCase.FlushDraw:
@@ -291,6 +290,12 @@ namespace Poker
             return (int)Math.Round(equityNeeded * 100);
         }
 
+        struct Statistics {
+            public int callEv;
+            public int reraiseEv;
+            public int reraiseAmount;
+        }
+        
         public static int[] Options(int handEquity, int pot, int raise)
         {
             //result[call EV, reraise EV, optimal reraiseAmount]
