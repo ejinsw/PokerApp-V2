@@ -309,8 +309,6 @@ namespace Poker
                 int callEV = (int)Math.Round(equityFactor * (pot + raise) - raise * (1.0f - equityFactor));
                 result[0] = callEV;
                 double reraiseAmount = (double)(pot * equityFactor) / (1.0f - 2 * equityFactor);
-                //edge case for when equityFactor is 0.5
-                //if 0.5, player should shove
                 if (reraiseAmount < raise)
                 {
                     reraiseAmount = raise * 2;
