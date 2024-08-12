@@ -293,23 +293,33 @@ namespace Poker
 
         public static int[] Options(int handEquity, int pot, int raise)
         {
-            //result[call EV, raise EV, optimal reraiseAmount]
+            //result[call EV, reraise EV, optimal reraiseAmount]
             //reraiseAmount is the totla money player puts into pot
             int[] result = new int[3];
-            double equityFactor = handEquity / 100.0;
-            int callEV = (int)Math.Round(equityFactor * (pot + raise) - raise * (1.0 - equityFactor));
-            result[0] = callEV;
-            double reraiseAmount = (double)(pot * equityFactor) / (1.0 - 2 * equityFactor);
-            //edge case for when equityFactor is 0.5
-            //if 0.5, player should shove
-            if (reraiseAmount < raise)
+            if (handEquity >= 50)
             {
-                reraiseAmount = raise * 2;
+                result[0] = (int)Math.Round((double)pot / 2);
+                result[1] = (int)Math.Round((double)pot / 2);
+                result[2] = raise * 2;
+                return result;
             }
-            int raiseEV = (int)Math.Round(equityFactor * (pot + reraiseAmount * 2) - reraiseAmount);
-            result[1] = raiseEV;
-            result[2] = (int)Math.Round(reraiseAmount);
-            return result;
+            else
+            {
+                double equityFactor = handEquity / 100.0f;
+                int callEV = (int)Math.Round(equityFactor * (pot + raise) - raise * (1.0f - equityFactor));
+                result[0] = callEV;
+                double reraiseAmount = (double)(pot * equityFactor) / (1.0f - 2 * equityFactor);
+                //edge case for when equityFactor is 0.5
+                //if 0.5, player should shove
+                if (reraiseAmount < raise)
+                {
+                    reraiseAmount = raise * 2;
+                }
+                int raiseEV = (int)Math.Round(equityFactor * (pot + reraiseAmount * 2) - reraiseAmount);
+                result[1] = raiseEV;
+                result[2] = (int)Math.Round(reraiseAmount);
+                return result;
+            }
         }
 
     }
