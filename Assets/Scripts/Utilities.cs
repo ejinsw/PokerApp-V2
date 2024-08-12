@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.Rendering;
 using Random = Unity.Mathematics.Random;
 
 namespace Poker
@@ -61,11 +62,12 @@ namespace Poker
             return rng.NextDouble(0, 1) < p;
         }
 
-        public static void Shuffle<T>(this IList<T> list) {
+        public static void Shuffle<T>(this IList<T> list)
+        {
             // To ensure random shuffle every time
             int seed = Environment.TickCount;
             Random shuffleRng = new Random((uint)seed);
-            
+
             int n = list.Count;
             while (n > 1)
             {
@@ -91,7 +93,8 @@ namespace Poker
         public static List<Card> NewDeck()
         {
             List<Card> deck = new();
-            foreach (Suit s in Enum.GetValues(typeof(Suit))) {
+            foreach (Suit s in Enum.GetValues(typeof(Suit)))
+            {
                 if (s == Suit.Null) continue;
                 foreach (Rank r in Enum.GetValues(typeof(Rank)))
                 {
@@ -147,10 +150,13 @@ namespace Poker
             return cards;
         }
 
-        public static bool DeckInsert(ref List<Card> deck, ref List<Card> toInsert) {
+        public static bool DeckInsert(ref List<Card> deck, ref List<Card> toInsert)
+        {
             bool alreadyHas = false;
-            foreach (Card c in toInsert) {
-                if (deck.Contains(c)) {
+            foreach (Card c in toInsert)
+            {
+                if (deck.Contains(c))
+                {
                     alreadyHas = true;
                     continue;
                 }
@@ -255,5 +261,58 @@ namespace Poker
 
             return true;
         }
+
+        public static int HandEquity(int n)
+        {
+            BluffCases.BluffCase a = BluffCases.BluffCase.None;
+            switch (a)
+            {
+                case BluffCases.BluffCase.FlushDraw:
+                    return n == 3 ? 36 : 18;
+                case BluffCases.BluffCase.BackdoorFlushDraw:
+                    return 4;
+                case BluffCases.BluffCase.OverPair:
+                    return n == 3 ? 70 : 80;
+                case BluffCases.BluffCase.UnderPair:
+                    return n == 3 ? 8 : 4;
+                case BluffCases.BluffCase.StraightDraw:
+                    return n == 3 ? 32 : 17;
+                case BluffCases.BluffCase.GutShot:
+                    return n == 3 ? 17 : 9;
+                case BluffCases.BluffCase.StraightFlushDraw:
+                    return n == 3 ? 54 : 33;
+                default:
+                    return 0;
+            }
+        }
+        public static int PotOdds(int pot, int raise)
+        {
+            double equityNeeded = (double)raise / (pot + 2 * raise);
+            return (int)Math.Round(equityNeeded * 100);
+        }
+
+        public static int[] Options(int handEquity, int pot, int raise)
+        {
+            //result[call EV, raise EV, optimal reraiseAmount]
+            //reraiseAmount is the totla money player puts into pot
+            int[] result = new int[3];
+            double equityFactor = handEquity / 100.0;
+            int callEV = (int)Math.Round(equityFactor * (pot + raise) - raise * (1.0 - equityFactor));
+            result[0] = callEV;
+            double reraiseAmount = (double)(pot * equityFactor) / (1.0 - 2 * equityFactor);
+            //edge case for when equityFactor is 0.5
+            //if 0.5, player should shove
+            if (reraiseAmount < raise)
+            {
+                reraiseAmount = raise * 2;
+            }
+            int raiseEV = (int)Math.Round(equityFactor * (pot + reraiseAmount * 2) - reraiseAmount);
+            result[1] = raiseEV;
+            result[2] = (int)Math.Round(reraiseAmount);
+            return result;
+        }
+
     }
 }
+
+

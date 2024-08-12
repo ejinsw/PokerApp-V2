@@ -33,4 +33,5 @@ public class GameSettings : ScriptableObject
     public List<Card> customCommunityCards;
 
     [Header("Scenarios")] public BluffCases.BluffCase scenario;
+
 }

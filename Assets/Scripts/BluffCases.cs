@@ -14,32 +14,36 @@ namespace Poker
         public enum BluffCase
         {
             None,
-            Pair,
             UnderPair,
             OverPair,
-            DoublePair,
-            Triples,
-            FourOfAKind,
-            FullHouse,
             StraightDraw,
             GutShot,
             BackdoorFlushDraw,
             FlushDraw,
             StraightFlushDraw,
+            FullHouse,
+            DoublePair,
+            Triples,
+            FourOfAKind,
+            Pair
         }
 
-        public static List<BluffCase> GetAllBluffCases(List<Card> cc, List<Card> hand) {
+        public static List<BluffCase> GetAllBluffCases(List<Card> cc, List<Card> hand)
+        {
             List<Card> cards = new List<Card>(cc);
             cards.AddRange(hand);
-            
+
             List<BluffCase> bluffCases = new();
+
+            if (NumberOfPairs(cards) == 1 && !IsUnderPair(cc, hand) && !IsOverPair(cc, hand))
+                bluffCases.Add(BluffCase.Pair);
 
             if (IsUnderPair(cc, hand))
                 bluffCases.Add(BluffCase.UnderPair);
-            
+
             if (IsOverPair(cc, hand))
                 bluffCases.Add(BluffCase.OverPair);
-            
+
             if (NumberOfPairs(cards) == 2)
                 bluffCases.Add(BluffCase.DoublePair);
 
@@ -51,7 +55,7 @@ namespace Poker
 
             if (IsFullHouse(cards))
                 bluffCases.Add(BluffCase.FullHouse);
-            
+
             if (IsBackdoorFlushDraw(cards) && !IsStraightFlushDraw(cards))
                 bluffCases.Add(BluffCase.BackdoorFlushDraw);
 
@@ -60,7 +64,7 @@ namespace Poker
 
             if (IsStraightDraw(cards) && !IsStraightFlushDraw(cards))
                 bluffCases.Add(BluffCase.StraightDraw);
-            
+
             if (IsGutshot(cards))
                 bluffCases.Add(BluffCase.GutShot);
 
@@ -87,7 +91,7 @@ namespace Poker
         public static bool IsBackdoorFlushDraw(List<Card> cards)
         {
             // There aren't enough cards
-            if (cards.Count < 3)
+            if (cards.Count != 3)
             {
                 return false;
             }
@@ -103,7 +107,7 @@ namespace Poker
             // King - Ace is 12 - 0
             return Mathf.Abs((int)a - (int)b) == 1 || Mathf.Abs((int)a - (int)b) == 12;
         }
-        
+
         public static bool IsStraightDraw(List<Card> cards)
         {
             // There aren't enough cards
@@ -123,10 +127,10 @@ namespace Poker
                 .Select((rank, index) => new { Rank = rank, GroupKey = (int)rank - index })
                 .GroupBy(x => x.GroupKey, x => x.Rank)
                 .Where(group => group.Count() == 4);
-            
+
             return rankGroups.Any();
         }
-        
+
         public static bool IsStraightFlushDraw(List<Card> cards)
         {
             // There aren't enough cards
@@ -212,23 +216,25 @@ namespace Poker
             var ranks = cards.Select(card => card.Rank).GroupBy(rank => rank).Where(group => group.Count() == 2);
             return ranks.Count();
         }
-        
-        public static bool IsUnderPair(List<Card> cc, List<Card> hand) {
+
+        public static bool IsUnderPair(List<Card> cc, List<Card> hand)
+        {
             if (NumberOfPairs(hand) == 0) return false;
 
             List<Card> orderedCC = cc.OrderBy(card => card.Rank).Distinct().ToList();
 
             return hand[0].Rank < orderedCC[0].Rank;
         }
-        
-        public static bool IsOverPair(List<Card> cc, List<Card> hand) {
+
+        public static bool IsOverPair(List<Card> cc, List<Card> hand)
+        {
             if (NumberOfPairs(hand) == 0) return false;
 
             List<Card> orderedCC = cc.OrderBy(card => card.Rank).Distinct().ToList();
 
             return hand[0].Rank > orderedCC.Last().Rank;
         }
-        
+
         public static bool IsTriples(List<Card> cards)
         {
             var ranks = cards.Select(card => card.Rank).GroupBy(rank => rank).Where(group => group.Count() == 3);
@@ -255,9 +261,11 @@ namespace Poker
 
         #region Scenarios
 
-        public static List<Card> ScenarioCC(BluffCase scenario, ref List<Card> deck, int size) {
+        public static List<Card> ScenarioCC(BluffCase scenario, ref List<Card> deck, int size)
+        {
             List<Card> cc = new();
-            switch (scenario) {
+            switch (scenario)
+            {
                 case BluffCase.None:
                     break;
                 case BluffCase.UnderPair:
@@ -285,10 +293,12 @@ namespace Poker
 
             return cc;
         }
-        
-        public static List<Card> ScenarioP(BluffCase scenario, ref List<Card> deck, List<Card> cc) {
+
+        public static List<Card> ScenarioP(BluffCase scenario, ref List<Card> deck, List<Card> cc)
+        {
             List<Card> cards = new();
-            switch (scenario) {
+            switch (scenario)
+            {
                 case BluffCase.None:
                     break;
                 case BluffCase.UnderPair:
@@ -316,7 +326,7 @@ namespace Poker
 
             return cards;
         }
-        
+
         public static List<Card> FlushDrawCc(ref List<Card> deck, int size)
         {
             List<Card> cards = Utilities.HandSuited(ref deck);
