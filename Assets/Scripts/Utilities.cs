@@ -310,16 +310,16 @@ namespace Poker
             //result[call EV, reraise EV, optimal reraiseAmount]
             //reraiseAmount is the totla money player puts into pot
             Statistics result = new();
-            if (handEquity >= 50)
+            double equityFactor = handEquity / 100.0f;
+            if (equityFactor >= 50)
             {
                 result.callEv = (int)Math.Round((double)pot / 2);
-                result.reraiseEv = (int)Math.Round((double)pot / 2);
-                result.reraiseAmount = raise * 2;
+                result.reraiseEv = (int)Math.Round((double)pot * equityFactor);
+                result.reraiseAmount = (int)GameManager.instance.selectedGameSettings.userStartingMoney;
                 return result;
             }
             else
             {
-                double equityFactor = handEquity / 100.0f;
                 int callEV = (int)Math.Round(equityFactor * (pot + raise) - raise * (1.0f - equityFactor));
                 result.callEv = callEV;
                 double reraiseAmount = (double)(pot * equityFactor) / (1.0f - 2 * equityFactor);
