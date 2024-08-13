@@ -471,7 +471,7 @@ public class GameManager : MonoBehaviour
                     {
                         if (action.Money == -1)
                         {
-                            action.Money = Utilities.RandomInt(0, (int)game.Pot, STEP);
+                            action.Money = Utilities.RandomInt(5, (int)game.Pot, STEP);
                         }
                         yield return StartCoroutine(playerComponents[p].DoTurn(action));
                     }
