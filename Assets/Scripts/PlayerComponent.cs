@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using Poker;
@@ -58,6 +59,9 @@ public class PlayerComponent : MonoBehaviour {
                 }
             }
         }
+        
+        if (Player.LastAction() != null)
+            GameManager.instance.game.ActionLog.Add(Player.LastAction());
 
         yield return null;
     }
@@ -77,6 +81,9 @@ public class PlayerComponent : MonoBehaviour {
                 yield return StartCoroutine(Raise(action.Money, false));
                 break;
         }
+        
+        if (Player.LastAction() != null)
+            GameManager.instance.game.ActionLog.Add(Player.LastAction());
 
         yield return null;
     }

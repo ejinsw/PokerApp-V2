@@ -47,6 +47,10 @@ public class ResultsManager : MonoBehaviour {
     }
 
     public void InitializeResults(Game game, GameSettings gameSettings) {
+        foreach (PlayerAction p in game.ActionLog) {
+            Debug.Log(Enum.GetName(typeof(ActionType),p.ActionType) + ": "+ p.Money);
+        }
+        
         // Initialize Cards
         List<Card> hand = game.User.Cards.Select(card => card.Clone()).ToList();
         foreach (Card c in hand) {
@@ -74,5 +78,31 @@ public class ResultsManager : MonoBehaviour {
         reraiseEv.text = $"${results.reraiseEv}";
 
         resultsScreen.SetActive(true);
+    }
+
+    public void Retry() {
+        foreach (Transform t in communityCards) {
+            Destroy(t.gameObject);
+        }
+
+        foreach (Transform t in userHand) {
+            Destroy(t.gameObject);
+        }
+        GameManager.instance.ResetGame();
+        GameManager.instance.Initialize(GameManager.instance.selectedGameSettings);
+        resultsScreen.SetActive(false);
+    }
+
+    public void Continue() {
+        foreach (Transform t in communityCards) {
+            Destroy(t.gameObject);
+        }
+
+        foreach (Transform t in userHand) {
+            Destroy(t.gameObject);
+        }
+        GameManager.instance.ResetGame();
+        GameManager.instance.PreInitialization();
+        resultsScreen.SetActive(false);
     }
 }
