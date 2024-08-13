@@ -52,9 +52,15 @@ namespace Poker
             return num;
         }
 
-        public static int RandomInt(int min, int max)
-        {
-            return rng.NextInt(min, max + 1);
+        public static int RandomInt(int min, int max, int step = 1) {
+            // Calculate the number of steps between min and max
+            int stepCount = (max - min) / step + 1;
+
+            // Generate a random index within the range of steps
+            int randomStepIndex = rng.NextInt(0, stepCount);
+
+            // Calculate the random value based on the step size
+            return min + (randomStepIndex * step);
         }
 
         public static bool TrueWithProbability(double p)

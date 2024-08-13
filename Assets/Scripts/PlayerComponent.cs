@@ -42,8 +42,8 @@ public class PlayerComponent : MonoBehaviour {
                 else {
                     // TODO: Change the bounds for reraising from just +10 to +100
                     long raiseAmount = lastRaiser.LastAction() != null
-                        ? Utilities.RandomInt((int)lastRaiser.LastAction().Money + 10, (int)lastRaiser.LastAction().Money + 100)
-                        : Utilities.RandomInt(10, 100);
+                        ? Utilities.RandomInt((int)lastRaiser.LastAction().Money + 10, (int)lastRaiser.LastAction().Money + 100, GameManager.STEP)
+                        : Utilities.RandomInt(10, 100, GameManager.STEP);
                     yield return StartCoroutine(Raise(raiseAmount, true));
                 }
             }
@@ -55,7 +55,7 @@ public class PlayerComponent : MonoBehaviour {
                 }
                 else {
                     // TODO: Change the bounds for raising 
-                    yield return StartCoroutine(Raise(Utilities.RandomInt(10, 100), true));
+                    yield return StartCoroutine(Raise(Utilities.RandomInt(10, 100, GameManager.STEP), true));
                 }
             }
         }
