@@ -75,7 +75,7 @@ public class ResultsManager : MonoBehaviour
         int gcd = Utilities.GCD(potOddsRatio1, potOddsRatio2);
         potOddsRatio1 /= gcd;
         potOddsRatio2 /= gcd;
-        int actionEV = handEq * ((int)(game.Pot + 2 * game.User.LastAction().Money)) - (int)game.User.LastAction().Money;
+        int actionEV = (int)Math.Round(handEq / 100.0f * (game.Pot + 2 * game.User.LastAction().Money) - game.User.LastAction().Money);
         Utilities.Statistics results = Utilities.Options(handEq, (int)game.Pot, (int)game.Players[0].LastAction().Money);
 
         pot.text = $"Pot: ${game.Pot}";
@@ -84,11 +84,10 @@ public class ResultsManager : MonoBehaviour
         villainRaise.text = $"Villain Raise: ${game.Players[0].LastAction().Money}";
         potOdds.text = $"Pot Odds: {potOddsRatio1}:{potOddsRatio2}";
         userAction.text = $"You Chose: {Enum.GetName(typeof(ActionType), game.User.LastAction().ActionType)} ${game.User.LastAction().Money}";
-        userEv.text = $"User EV: ${actionEV}"; // TODO: Update this
+        userEv.text = $"User EV: ${actionEV}";
         foldEv.text = $"$0";
         callEv.text = $"${results.callEv}";
-        reraiseEv.text = $"${results.reraiseEv}";
-
+        reraiseEv.text = "$" + (gameSettings.userStartingMoney < 2 * game.Players[0].LastAction().Money ? "N/A" : results.reraiseEv);
         resultsScreen.SetActive(true);
     }
 

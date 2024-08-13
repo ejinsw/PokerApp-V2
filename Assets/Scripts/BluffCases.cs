@@ -486,7 +486,6 @@ namespace Poker
             {
                 min += Utilities.RandomInt(0, 1) == 1 ? 3 : -1;
             }
-
             foreach (Card c in deck)
             {
                 if ((int)c.Rank == min)
@@ -501,9 +500,13 @@ namespace Poker
             {
                 if ((int)c.Rank != min - 1 && (int)c.Rank != min + 1 && (int)c.Rank != min + 4 && (int)c.Rank != min - 4)
                 {
-                    cards.Add(c);
-                    Utilities.DeckTakeCards(ref deck, cards);
-                    break;
+                    if ((min == 12 && c.Rank != 0)) { }
+                    else
+                    {
+                        cards.Add(c);
+                        Utilities.DeckTakeCards(ref deck, cards);
+                        break;
+                    }
                 }
             }
 
