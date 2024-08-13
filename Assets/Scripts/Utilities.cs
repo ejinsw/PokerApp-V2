@@ -290,12 +290,13 @@ namespace Poker
             return (int)Math.Round(equityNeeded * 100);
         }
 
-        public class Statistics {
+        public class Statistics
+        {
             public int callEv = 0;
             public int reraiseEv = 0;
             public int reraiseAmount = 0;
         }
-        
+
         public static Statistics Options(int handEquity, int pot, int raise)
         {
             //result[call EV, reraise EV, optimal reraiseAmount]
