@@ -52,7 +52,8 @@ namespace Poker
             return num;
         }
 
-        public static int RandomInt(int min, int max, int step = 1) {
+        public static int RandomInt(int min, int max, int step = 1)
+        {
             // Calculate the number of steps between min and max
             int stepCount = (max - min) / step + 1;
 
@@ -319,9 +320,9 @@ namespace Poker
             double equityFactor = handEquity / 100.0f;
             if (equityFactor >= 50)
             {
-                result.callEv = (int)Math.Round((double)pot / 2);
-                result.reraiseEv = (int)Math.Round((double)pot * equityFactor);
+                result.callEv = (int)Math.Round((double)(pot + 2 * raise) * equityFactor) - raise;
                 result.reraiseAmount = (int)GameManager.instance.selectedGameSettings.userStartingMoney;
+                result.reraiseEv = (int)Math.Round((double)(pot + 2 * result.reraiseAmount) * equityFactor) - raise;
                 return result;
             }
             else
