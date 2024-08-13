@@ -284,10 +284,18 @@ namespace Poker
                     return 0;
             }
         }
-        public static int PotOdds(int pot, int raise)
+        public class Odds
         {
-            double equityNeeded = (double)raise / (pot + 2 * raise);
-            return (int)Math.Round(equityNeeded * 100);
+            public int first = 0;
+            public int second = 0;
+        }
+        public static Odds PotOdds(int pot, int raise)
+        {
+            Odds odds = new();
+            odds.first = pot + raise;
+            odds.second = raise;
+            return odds;
+
         }
 
         public class Statistics
@@ -325,7 +333,16 @@ namespace Poker
                 return result;
             }
         }
-
+        public static int GCD(int a, int b)
+        {
+            while (b != 0)
+            {
+                int temp = b;
+                b = a % b;
+                a = temp;
+            }
+            return a;
+        }
     }
 }
 

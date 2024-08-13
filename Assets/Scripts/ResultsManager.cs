@@ -6,12 +6,14 @@ using Poker;
 using TMPro;
 using UnityEngine;
 
-public class ResultsManager : MonoBehaviour {
+public class ResultsManager : MonoBehaviour
+{
     #region Singleton
 
     public static ResultsManager instance;
 
-    private void Awake() {
+    private void Awake()
+    {
         if (instance == null) instance = this;
     }
 
@@ -42,37 +44,47 @@ public class ResultsManager : MonoBehaviour {
 
     #endregion
 
-    private void Start() {
+    private void Start()
+    {
         resultsScreen.SetActive(false);
     }
 
-    public void InitializeResults(Game game, GameSettings gameSettings) {
-        foreach (PlayerAction p in game.ActionLog) {
-            Debug.Log(Enum.GetName(typeof(ActionType),p.ActionType) + ": "+ p.Money);
+    public void InitializeResults(Game game, GameSettings gameSettings)
+    {
+        foreach (PlayerAction p in game.ActionLog)
+        {
+            Debug.Log(Enum.GetName(typeof(ActionType), p.ActionType) + ": " + p.Money);
         }
-        
+
         // Initialize Cards
         List<Card> hand = game.User.Cards.Select(card => card.Clone()).ToList();
-        foreach (Card c in hand) {
+        foreach (Card c in hand)
+        {
             GameManager.instance.CreateCard(c, cardPrefab, userHand, 1.6f);
         }
 
         List<Card> cc = game.CommunityCards.Select(card => card.Clone()).ToList();
-        foreach (Card c in cc) {
+        foreach (Card c in cc)
+        {
             GameManager.instance.CreateCard(c, cardPrefab, communityCards, 1.6f);
         }
 
         int handEq = Utilities.HandEquity(gameSettings.scenario, game.CommunityCards.Count);
-        int potOddsRatio = Utilities.PotOdds((int)game.Pot, (int)game.Players[0].LastAction().Money);
+        int potOddsRatio1 = Utilities.PotOdds((int)game.Pot, (int)game.Players[0].LastAction().Money).first;
+        int potOddsRatio2 = Utilities.PotOdds((int)game.Pot, (int)game.Players[0].LastAction().Money).second;
+        int gcd = Utilities.GCD(potOddsRatio1, potOddsRatio2);
+        potOddsRatio1 /= gcd;
+        potOddsRatio2 /= gcd;
+        int actionEV = handEq * ((int)(game.Pot + 2 * game.User.LastAction().Money)) - (int)game.User.LastAction().Money;
         Utilities.Statistics results = Utilities.Options(handEq, (int)game.Pot, (int)game.Players[0].LastAction().Money);
 
         pot.text = $"Pot: ${game.Pot}";
-        handEquity.text = $"Hand Equity: ${handEq}";
-        villainFoldEquity.text = $"Villain Fold Equity: $0";
+        handEquity.text = $"Hand Equity: {handEq}%";
+        villainFoldEquity.text = $"Villain Fold Equity: 0";
         villainRaise.text = $"Villain Raise: ${game.Players[0].LastAction().Money}";
-        potOdds.text = $"Pot Odds: 1:{potOddsRatio}";
-        userAction.text = $"You Chose: {Enum.GetName(typeof(ActionType), game.User.LastAction().ActionType)}";
-        userEv.text = $"User EV: $TBA"; // TODO: Update this
+        potOdds.text = $"Pot Odds: {potOddsRatio1}:{potOddsRatio2}";
+        userAction.text = $"You Chose: {Enum.GetName(typeof(ActionType), game.User.LastAction().ActionType)} ${game.User.LastAction().Money}";
+        userEv.text = $"User EV: ${actionEV}"; // TODO: Update this
         foldEv.text = $"$0";
         callEv.text = $"${results.callEv}";
         reraiseEv.text = $"${results.reraiseEv}";
@@ -80,12 +92,15 @@ public class ResultsManager : MonoBehaviour {
         resultsScreen.SetActive(true);
     }
 
-    public void Retry() {
-        foreach (Transform t in communityCards) {
+    public void Retry()
+    {
+        foreach (Transform t in communityCards)
+        {
             Destroy(t.gameObject);
         }
 
-        foreach (Transform t in userHand) {
+        foreach (Transform t in userHand)
+        {
             Destroy(t.gameObject);
         }
         GameManager.instance.ResetGame();
@@ -93,12 +108,15 @@ public class ResultsManager : MonoBehaviour {
         resultsScreen.SetActive(false);
     }
 
-    public void Continue() {
-        foreach (Transform t in communityCards) {
+    public void Continue()
+    {
+        foreach (Transform t in communityCards)
+        {
             Destroy(t.gameObject);
         }
 
-        foreach (Transform t in userHand) {
+        foreach (Transform t in userHand)
+        {
             Destroy(t.gameObject);
         }
         GameManager.instance.ResetGame();
