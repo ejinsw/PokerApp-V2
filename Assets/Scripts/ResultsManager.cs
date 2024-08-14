@@ -5,6 +5,7 @@ using System.Linq;
 using Poker;
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class ResultsManager : MonoBehaviour
 {
@@ -51,6 +52,16 @@ public class ResultsManager : MonoBehaviour
 
     public void InitializeResults(Game game, GameSettings gameSettings)
     {
+        foreach (Transform t in communityCards)
+        {
+            Destroy(t.gameObject);
+        }
+
+        foreach (Transform t in userHand)
+        {
+            Destroy(t.gameObject);
+        }
+        
         foreach (PlayerAction p in game.ActionLog)
         {
             Debug.Log(Enum.GetName(typeof(ActionType), p.ActionType) + ": " + p.Money);
@@ -62,13 +73,13 @@ public class ResultsManager : MonoBehaviour
         {
             GameManager.instance.CreateCard(c, cardPrefab, userHand, 1.6f);
         }
-
+        
         List<Card> cc = game.CommunityCards.Select(card => card.Clone()).ToList();
         foreach (Card c in cc)
         {
             GameManager.instance.CreateCard(c, cardPrefab, communityCards, 1.6f);
         }
-
+        
         int handEq = Utilities.HandEquity(gameSettings.scenario, game.CommunityCards.Count);
         int potOddsRatio1 = Utilities.PotOdds((int)game.Pot, (int)game.Players[0].LastAction().Money).first;
         int potOddsRatio2 = Utilities.PotOdds((int)game.Pot, (int)game.Players[0].LastAction().Money).second;
