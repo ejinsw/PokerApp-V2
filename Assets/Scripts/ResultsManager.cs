@@ -88,6 +88,7 @@ public class ResultsManager : MonoBehaviour
         foldEv.text = $"$0";
         callEv.text = $"${results.callEv}";
         reraiseEv.text = "$" + (gameSettings.userStartingMoney < 2 * game.Players[0].LastAction().Money ? "N/A" : results.reraiseEv);
+
         resultsScreen.SetActive(true);
     }
 

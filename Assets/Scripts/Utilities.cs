@@ -278,7 +278,7 @@ namespace Poker
                 case BluffCases.BluffCase.BackdoorFlushDraw:
                     return 4;
                 case BluffCases.BluffCase.OverPair:
-                    return numCc == 3 ? 70 : 80;
+                    return numCc == 3 ? RandomInt(55, 75) : RandomInt(70, 85);
                 case BluffCases.BluffCase.UnderPair:
                     return numCc == 3 ? 8 : 4;
                 case BluffCases.BluffCase.StraightDraw:
