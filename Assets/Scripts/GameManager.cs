@@ -53,7 +53,7 @@ public class GameManager : MonoBehaviour
 
     [SerializeField] private GameObject playerPrefab;
     [SerializeField] private List<Transform> playersTransforms;
-    [SerializeField] private Transform userTransform;
+    [SerializeField] UserComponent userComponent;
 
     [SerializeField] public GameObject cardPrefab;
     [SerializeField] private GameObject cardHorizontalPrefab;
@@ -139,12 +139,7 @@ public class GameManager : MonoBehaviour
         {
             Destroy(t.gameObject);
         }
-
-        foreach (Transform t in userTransform)
-        {
-            Destroy(t.gameObject);
-        }
-
+        
         foreach (PlayerComponent p in playerComponents.Values)
         {
             Destroy(p.gameObject);
@@ -405,7 +400,7 @@ public class GameManager : MonoBehaviour
         {
             if (p == game.User)
             {
-                playerComponents.Add(p, CreatePlayer(p, userTransform, 1.4f));
+                userComponent.Initialize(game.User);
             }
             else
             {
