@@ -16,9 +16,14 @@ public class RaiseComponent : MonoBehaviour, IPointerDownHandler, IPointerUpHand
     [SerializeField] TMP_Text raiseMoneyText;
     [SerializeField] TMP_Text confirmText;
     [SerializeField] Button raiseButton;
-    
+
 
     void Start()
+    {
+        Initialize();
+    }
+    
+    public void Initialize()
     {
         confirmText.gameObject.SetActive(true);
         raiseMoneyText.gameObject.SetActive(false);

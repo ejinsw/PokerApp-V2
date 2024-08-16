@@ -35,11 +35,11 @@ public class GameManager : MonoBehaviour
 
     private Dictionary<Player, PlayerComponent> playerComponents = new();
 
-    private bool userTurn = false;
+    public bool userTurn = false;
 
-    private ActionType userAction = ActionType.Null;
+    public ActionType userAction = ActionType.Null;
 
-    private long userRaiseAmount = 0;
+    public long userRaiseAmount = 0;
     [HideInInspector] public GameSettings selectedGameSettings;
 
     #region Serialize Fields
@@ -439,7 +439,9 @@ public class GameManager : MonoBehaviour
 
             if (p == game.User)
             {
-                yield return StartCoroutine(UserTurn());
+                yield return StartCoroutine(userComponent.UserTurn());
+                
+                userComponent.UpdateUI();
             }
             else
             {
@@ -475,9 +477,9 @@ public class GameManager : MonoBehaviour
                 {
                     yield return StartCoroutine(playerComponents[p].DoTurn());
                 }
+                playerComponents[p].UpdateUI();
             }
 
-            playerComponents[p].UpdateUI();
             potText.text = $"${game.GetPot()}";
 
             Debug.Log(p.Name + " " + Enum.GetName(typeof(ActionType), p.LastAction().ActionType) + ": " + p.LastAction().Money);
@@ -496,50 +498,13 @@ public class GameManager : MonoBehaviour
         yield return null;
     }
 
-    private IEnumerator UserTurn()
-    {
-        Debug.Log("User's turn started.");
-        userTurn = true;
-        ActivateButtons(true);
-        yield return new WaitUntil(() => !userTurn);
-
-        Debug.Log($"User action: {userAction}");
-
-        switch (userAction)
-        {
-            case ActionType.Fold:
-                yield return StartCoroutine(Fold());
-                break;
-            case ActionType.Check:
-                yield return StartCoroutine(Check());
-                break;
-            case ActionType.Call:
-                if (game.LastRaiser != null && game.LastRaiser.LastAction() != null)
-                {
-                    yield return StartCoroutine(Call(game.LastRaiser.LastAction().Money));
-                }
-                else
-                {
-                    Debug.LogError("LastRaiser or LastRaiser's LastAction is null in UserTurn.");
-                }
-
-                break;
-            case ActionType.Raise:
-                yield return StartCoroutine(Raise(userRaiseAmount));
-                break;
-        }
-
-        if (game.User.LastAction() != null)
-            game.ActionLog.Add(game.User.LastAction());
-
-        ActivateButtons(false);
-    }
+    
 
     #endregion
 
     #region User Actions
 
-    private void ActivateButtons(bool activate)
+    public void ActivateButtons(bool activate)
     {
         long minRaise = 0;
         if (game.LastRaiser != null && game.LastRaiser.LastAction() != null)
@@ -551,7 +516,7 @@ public class GameManager : MonoBehaviour
         raiseSlider.maxValue = game.User.Money / STEP;
 
         raiseSlider.gameObject.SetActive(false);
-        raiseText.gameObject.SetActive(false);
+        // raiseText.gameObject.SetActive(false);
         foldButton.gameObject.SetActive(false);
         checkButton.gameObject.SetActive(false);
         callButton.gameObject.SetActive(false);
@@ -569,13 +534,13 @@ public class GameManager : MonoBehaviour
                 }
                 else
                 {
-                    callButton.GetComponentInChildren<TMP_Text>().text = "Call";
+                    callButton.GetComponentInChildren<TMP_Text>().text = $"Call ${game.LastRaiser.LastAction().Money}";
 
                     if (game.LastRaiser.LastAction().Money * 2 <= game.User.Money)
                     {
                         raiseButton.gameObject.SetActive(true);
                         raiseSlider.gameObject.SetActive(true);
-                        raiseText.gameObject.SetActive(true);
+                        // raiseText.gameObject.SetActive(true);
                     }
                 }
 
@@ -587,7 +552,7 @@ public class GameManager : MonoBehaviour
                 checkButton.gameObject.SetActive(true);
                 raiseButton.gameObject.SetActive(true);
                 raiseSlider.gameObject.SetActive(true);
-                raiseText.gameObject.SetActive(true);
+                // raiseText.gameObject.SetActive(true);
             }
         }
     }
@@ -596,51 +561,6 @@ public class GameManager : MonoBehaviour
     {
         userAction = action;
         userTurn = false;
-    }
-
-    public IEnumerator Fold()
-    {
-        game.User.ActionLog.Add(new PlayerAction(ActionType.Fold, 0));
-        game.User.Folded = true;
-        yield return null;
-    }
-
-    public IEnumerator Check()
-    {
-        game.User.ActionLog.Add(new PlayerAction(ActionType.Check, 0));
-        yield return null;
-    }
-
-    public IEnumerator Call(long amount)
-    {
-        #region Null Check
-
-        if (game.LastRaiser == null || game.LastRaiser.LastAction() == null)
-        {
-            Debug.LogError("LastRaiser or LastRaiser's LastAction is null in Call method.");
-            yield break; // exit coroutine if there's an issue
-        }
-
-        #endregion
-
-        long useAmount = Math.Min(amount, game.User.Money);
-
-        game.User.UseMoney(useAmount);
-        game.User.ActionLog.Add(new PlayerAction(ActionType.Call, useAmount));
-        yield return null;
-    }
-
-    public IEnumerator Raise(long amount)
-    {
-        if (amount == game.LastRaiser.LastAction().Money)
-        {
-            yield return StartCoroutine(Call(amount));
-            yield break;
-        }
-        game.User.UseMoney(amount);
-        game.User.ActionLog.Add(new PlayerAction(ActionType.Raise, amount));
-        game.LastRaiser = game.User;
-        yield return null;
     }
 
     #endregion

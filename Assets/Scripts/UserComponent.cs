@@ -11,9 +11,10 @@ using Random = Unity.Mathematics.Random;
 public class UserComponent : MonoBehaviour
 {
     public Player User;
-    [SerializeField] private TMP_Text money;
+    [SerializeField] TMP_Text money;
     [SerializeField] CardComponent card1;
     [SerializeField] CardComponent card2;
+    [SerializeField] RaiseComponent raiseComponent;
 
     public void Initialize(Player user)
     {
@@ -23,116 +24,96 @@ public class UserComponent : MonoBehaviour
             card1.Initialize(User.Cards[0]);
         if (User.Cards.Count > 1 && User.Cards[1] != null)
             card1.Initialize(User.Cards[1]);
+
+        raiseComponent.Initialize();
     }
 
     public void UpdateUI()
     {
         money.text = "$" + User.Money;
     }
-
-    public IEnumerator DoTurn()
+    
+    public IEnumerator UserTurn()
     {
-        // TODO: Replace probability with folding frequency
-        if (Utilities.TrueWithProbability(0.3f) && GameManager.instance.game.LastRaiser != null) {
-            yield return StartCoroutine(Fold(true));
-        }
-        else {
-            Player lastRaiser = GameManager.instance.game.LastRaiser;
-            if (lastRaiser != null && lastRaiser != User) {
-                // Call or reraise
-                // TODO: Change the probability of calling vs reraising
-                if (Utilities.TrueWithProbability(0.5f)) {
-                    yield return StartCoroutine(Call(lastRaiser.LastAction().Money, true));
-                }
-                else {
-                    // TODO: Change the bounds for reraising from just +10 to +100
-                    long raiseAmount = lastRaiser.LastAction() != null
-                        ? Utilities.RandomInt((int)lastRaiser.LastAction().Money + 10, (int)lastRaiser.LastAction().Money + 100, GameManager.STEP)
-                        : Utilities.RandomInt(10, 100, GameManager.STEP);
-                    yield return StartCoroutine(Raise(raiseAmount, true));
-                }
-            }
-            else {
-                // Check or raise
-                // TODO: Change the probability of checking vs raising
-                if (Utilities.TrueWithProbability(0.5f)) {
-                    yield return StartCoroutine(Check(true));
-                }
-                else {
-                    // TODO: Change the bounds for raising 
-                    yield return StartCoroutine(Raise(Utilities.RandomInt(10, 100, GameManager.STEP), true));
-                }
-            }
-        }
+        Debug.Log("User's turn started.");
+        GameManager.instance.userTurn = true;
+        GameManager.instance.ActivateButtons(true);
+        yield return new WaitUntil(() => !GameManager.instance.userTurn);
 
-        if (User.LastAction() != null)
-            GameManager.instance.game.ActionLog.Add(User.LastAction());
+        Debug.Log($"User action: {GameManager.instance.userAction}");
 
-        yield return null;
-    }
-
-    public IEnumerator DoTurn(PlayerAction action)
-    {
-        switch (action.ActionType) {
+        switch (GameManager.instance.userAction)
+        {
         case ActionType.Fold:
-            yield return StartCoroutine(Fold(false));
+            yield return StartCoroutine(Fold());
             break;
         case ActionType.Check:
-            yield return StartCoroutine(Check(false));
+            yield return StartCoroutine(Check());
             break;
         case ActionType.Call:
-            yield return StartCoroutine(Call(action.Money, false));
+            if (GameManager.instance.game.LastRaiser != null && GameManager.instance.game.LastRaiser.LastAction() != null)
+            {
+                yield return StartCoroutine(Call(GameManager.instance.game.LastRaiser.LastAction().Money));
+            }
+            else
+            {
+                Debug.LogError("LastRaiser or LastRaiser's LastAction is null in UserTurn.");
+            }
+
             break;
         case ActionType.Raise:
-            yield return StartCoroutine(Raise(action.Money, false));
+            yield return StartCoroutine(Raise(GameManager.instance.userRaiseAmount));
             break;
         }
 
-        if (User.LastAction() != null)
-            GameManager.instance.game.ActionLog.Add(User.LastAction());
+        if (GameManager.instance.game.User.LastAction() != null)
+            GameManager.instance.game.ActionLog.Add(GameManager.instance.game.User.LastAction());
 
+        GameManager.instance.ActivateButtons(false);
+    }
+
+    public IEnumerator Fold()
+    {
+        GameManager.instance.game.User.ActionLog.Add(new PlayerAction(ActionType.Fold, 0));
+        GameManager.instance.game.User.Folded = true;
         yield return null;
     }
 
-    public IEnumerator Fold(bool logAction)
+    public IEnumerator Check()
     {
-        if (logAction)
-            User.ActionLog.Add(new PlayerAction(ActionType.Fold, 0));
-        User.Folded = true;
+        GameManager.instance.game.User.ActionLog.Add(new PlayerAction(ActionType.Check, 0));
         yield return null;
     }
 
-    public IEnumerator Check(bool logAction)
+    public IEnumerator Call(long amount)
     {
-        if (logAction)
-            User.ActionLog.Add(new PlayerAction(ActionType.Check, 0));
+        #region Null Check
+
+        if (GameManager.instance.game.LastRaiser == null || GameManager.instance.game.LastRaiser.LastAction() == null)
+        {
+            Debug.LogError("LastRaiser or LastRaiser's LastAction is null in Call method.");
+            yield break; // exit coroutine if there's an issue
+        }
+
+        #endregion
+
+        long useAmount = Math.Min(amount, GameManager.instance.game.User.Money);
+
+        GameManager.instance.game.User.UseMoney(useAmount);
+        GameManager.instance.game.User.ActionLog.Add(new PlayerAction(ActionType.Call, useAmount));
         yield return null;
     }
 
-    public IEnumerator Call(long callAmount, bool logAction)
+    public IEnumerator Raise(long amount)
     {
-        // TODO: For continuous games DON'T DELETE
-        // long useAmount = Player.LastAction() != null
-        //     ? callAmount - Player.LastAction().Money
-        // : callAmount;
-
-        User.UseMoney(callAmount);
-        if (logAction)
-            User.ActionLog.Add(new PlayerAction(ActionType.Call, callAmount));
-        yield return null;
-    }
-
-    public IEnumerator Raise(long raiseAmount, bool logAction)
-    {
-        // TODO: For continuous games DON'T DELETE
-        // long useAmount = Player.LastAction() != null
-        //     ? raiseAmount - Player.LastAction().Money
-        //     : raiseAmount;
-
-        User.UseMoney(raiseAmount);
-        if (logAction)
-            User.ActionLog.Add(new PlayerAction(ActionType.Raise, raiseAmount));
-        GameManager.instance.game.LastRaiser = User;
+        if (amount == GameManager.instance.game.LastRaiser.LastAction().Money)
+        {
+            yield return StartCoroutine(Call(amount));
+            yield break;
+        }
+        GameManager.instance.game.User.UseMoney(amount);
+        GameManager.instance.game.User.ActionLog.Add(new PlayerAction(ActionType.Raise, amount));
+        GameManager.instance.game.LastRaiser = GameManager.instance.game.User;
         yield return null;
     }
 }
