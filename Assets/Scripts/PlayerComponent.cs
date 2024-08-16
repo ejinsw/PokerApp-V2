@@ -12,6 +12,7 @@ public class PlayerComponent : MonoBehaviour {
     [SerializeField] private TMP_Text playerName;
     [SerializeField] private TMP_Text money;
     [SerializeField] private Transform hand;
+    [SerializeField] TMP_Text actionMessageText;
 
     public void Initialize(Player player, float scale) {
         Player = player;
@@ -24,6 +25,15 @@ public class PlayerComponent : MonoBehaviour {
 
     public void UpdateUI() {
         money.text = "$" + Player.Money;
+    }
+
+    public IEnumerator TypeText(string text)
+    {
+        actionMessageText.text = "";
+        foreach (char c in text) {
+            actionMessageText.text += c;
+            yield return new WaitForSeconds(0.1f);
+        }
     }
 
     public IEnumerator DoTurn() {
@@ -92,13 +102,13 @@ public class PlayerComponent : MonoBehaviour {
         if (logAction)
             Player.ActionLog.Add(new PlayerAction(ActionType.Fold, 0));
         Player.Folded = true;
-        yield return null;
+        yield return StartCoroutine(TypeText("Folded..."));
     }
 
     public IEnumerator Check(bool logAction) {
         if (logAction)
             Player.ActionLog.Add(new PlayerAction(ActionType.Check, 0));
-        yield return null;
+        yield return StartCoroutine(TypeText("Checked..."));
     }
 
     public IEnumerator Call(long callAmount, bool logAction) {
@@ -110,7 +120,7 @@ public class PlayerComponent : MonoBehaviour {
         Player.UseMoney(callAmount);
         if (logAction)
             Player.ActionLog.Add(new PlayerAction(ActionType.Call, callAmount));
-        yield return null;
+        yield return StartCoroutine(TypeText($"Called ${callAmount}..."));
     }
 
     public IEnumerator Raise(long raiseAmount, bool logAction) {
@@ -123,6 +133,6 @@ public class PlayerComponent : MonoBehaviour {
         if (logAction)
             Player.ActionLog.Add(new PlayerAction(ActionType.Raise, raiseAmount));
         GameManager.instance.game.LastRaiser = Player;
-        yield return null;
+        yield return StartCoroutine(TypeText($"Raised by ${raiseAmount}..."));
     }
 }
