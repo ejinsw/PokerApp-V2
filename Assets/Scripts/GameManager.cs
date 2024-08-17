@@ -518,12 +518,12 @@ public class GameManager : MonoBehaviour
         raiseSlider.minValue = minRaise;
         raiseSlider.maxValue = game.User.Money / STEP;
 
-        raiseSlider.gameObject.SetActive(false);
+        // raiseSlider.gameObject.SetActive(false);
         // raiseText.gameObject.SetActive(false);
         foldButton.gameObject.SetActive(false);
         checkButton.gameObject.SetActive(false);
         callButton.gameObject.SetActive(false);
-        raiseButton.gameObject.SetActive(false);
+        // raiseButton.gameObject.SetActive(false);
         if (activate)
         {
             if (game.LastRaiser != null && game.LastRaiser != game.User)
