@@ -69,6 +69,9 @@ public class GameManager : MonoBehaviour
 
     [SerializeField] private TMP_Text potText;
 
+    [SerializeField] TMP_Text hintText;
+    [SerializeField] GameObject hintObject;
+
     #endregion
 
     #endregion
@@ -411,6 +414,9 @@ public class GameManager : MonoBehaviour
                 index++;
             }
         }
+        
+        ToggleHint(false);
+        SetHint();
 
         #endregion
 
@@ -484,6 +490,8 @@ public class GameManager : MonoBehaviour
             }
 
             potText.text = $"${game.GetPot()}";
+            
+            SetHint();
 
             Debug.Log(p.Name + " " + Enum.GetName(typeof(ActionType), p.LastAction().ActionType) + ": " + p.LastAction().Money);
         }
@@ -560,6 +568,25 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    public void ToggleHint(bool toggle = true)
+    {
+        hintObject.SetActive(toggle ? !hintObject.activeInHierarchy : false);
+    }
+    
+    public void SetHint()
+    {
+        int handEq = Utilities.HandEquity(selectedGameSettings.scenario, game.CommunityCards.Count);
+        int raise = game.LastRaiser != null && game.LastRaiser.LastAction() != null ? (int)game.LastRaiser.LastAction().Money : 0;
+        Utilities.Odds potOdds = Utilities.PotOdds((int)game.Pot, raise);
+        
+        int gcd = Utilities.GCD(potOdds.first, potOdds.second);
+        potOdds.first /= gcd != 0 ? gcd : 1;
+        potOdds.second /= gcd != 0 ? gcd : 1;
+        
+        string text = $"<b>Straight Draw</b>\n\nHand Equity:\t<b>{handEq}%</b>\nPot Odds:\t\t<b>{potOdds.first}:{potOdds.second}</b>\n";
+        hintText.text = text;
+    }
+    
     public void UserAction(ActionType action)
     {
         userAction = action;
