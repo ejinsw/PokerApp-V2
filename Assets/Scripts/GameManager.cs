@@ -150,7 +150,10 @@ public class GameManager : MonoBehaviour
 
     public void PreInitialization()
     {
+        ResetGame();
+        
         selectedGameSettings = gameSettings[Utilities.RandomInt(0, gameSettings.Count - 1)];
+        Debug.Log($"Initializing {selectedGameSettings.settingsName}");
         Initialize(selectedGameSettings);
     }
 

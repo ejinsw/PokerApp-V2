@@ -130,7 +130,6 @@ public class ResultsManager : MonoBehaviour
         {
             Destroy(t.gameObject);
         }
-        GameManager.instance.ResetGame();
         GameManager.instance.PreInitialization();
         resultsScreen.SetActive(false);
     }

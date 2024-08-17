@@ -91,7 +91,7 @@ namespace Poker
         public static bool IsBackdoorFlushDraw(List<Card> cards)
         {
             // There aren't enough cards
-            if (cards.Count != 3)
+            if (cards.Count < 3)
             {
                 return false;
             }
@@ -139,7 +139,7 @@ namespace Poker
                 return false;
             }
 
-            return IsStraightDraw(cards) && (IsFlushDraw(cards) || IsBackdoorFlushDraw(cards));
+            return IsStraightDraw(cards) && (IsFlushDraw(cards));
 
             // // This Checks for a straight flush draw not a "straight draw" + "flush draw"
             // var suitGroups = cards.GroupBy(card => card.Suit).ToList();
