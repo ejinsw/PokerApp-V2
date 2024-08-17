@@ -19,6 +19,8 @@ public class CardComponent : MonoBehaviour {
         switch (c.Suit) {
             case Suit.Clubs:
                 suit.sprite = GameManager.instance.IconClubs;
+                suit.color = Color.black;
+                rank.color = Color.black;
                 break;
             case Suit.Diamonds:
                 suit.sprite = GameManager.instance.IconDiamonds;
@@ -32,6 +34,8 @@ public class CardComponent : MonoBehaviour {
                 break;
             case Suit.Spades:
                 suit.sprite = GameManager.instance.IconSpades;
+                suit.color = Color.black;
+                rank.color = Color.black;
                 break;
         }
         

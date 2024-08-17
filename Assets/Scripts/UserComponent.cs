@@ -23,7 +23,7 @@ public class UserComponent : MonoBehaviour
         if (User.Cards.Count > 0 && User.Cards[0] != null)
             card1.Initialize(User.Cards[0]);
         if (User.Cards.Count > 1 && User.Cards[1] != null)
-            card1.Initialize(User.Cards[1]);
+            card2.Initialize(User.Cards[1]);
 
         raiseComponent.Initialize();
     }
