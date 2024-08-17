@@ -391,7 +391,7 @@ public class GameManager : MonoBehaviour
         // Community Card Components
         foreach (Card c in game.CommunityCards)
         {
-            CreateCard(c, cardPrefab, communityCardsTransform, 1.4f);
+            CreateCard(c, cardPrefab, communityCardsTransform, 2f);
         }
 
         // Player Components
