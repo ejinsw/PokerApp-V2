@@ -40,7 +40,7 @@ public class ResultsManager : MonoBehaviour
     [SerializeField] private TMP_Text foldEv;
     [SerializeField] private TMP_Text callEv;
     [SerializeField] private TMP_Text reraiseEv;
-    
+
     [SerializeField] private TMP_Text foldAmount;
     [SerializeField] private TMP_Text callAmount;
     [SerializeField] private TMP_Text reraiseAmount;
@@ -114,8 +114,22 @@ public class ResultsManager : MonoBehaviour
         userEv.text = $"{actionEV} EV";
         foldEv.text = $"0 EV";
         callEv.text = $"{results.callEv} EV";
-        reraiseEv.text = (gameSettings.userStartingMoney < 2 * game.Players[0].LastAction().Money ? "N/A" : "0 EV -> " + results.reraiseEv + " EV");
-
+        if (2 * (int)game.Players[0].LastAction().Money == results.reraiseAmount)
+        {
+            reraiseEv.text = results.reraiseEv + " EV";
+            reraiseAmount.text = "($" + results.reraiseAmount + ")";
+        }
+        else
+        {
+            reraiseEv.text = (gameSettings.userStartingMoney < 2 * game.Players[0].LastAction().Money ? "N/A" : "0 -> " + results.reraiseEv + " EV");
+            if (results.reraiseEv == 0)
+            {
+                reraiseEv.text = (gameSettings.userStartingMoney < 2 * game.Players[0].LastAction().Money ? "N/A" : "0" + " EV");
+            }
+            reraiseAmount.text = $"(${2 * (int)game.Players[0].LastAction().Money} -> ${results.reraiseAmount})";
+        }
+        foldAmount.text = $"({Math.Round(100 * (game.Pot / (double)(game.Pot + game.Players[0].LastAction().Money)))}% MDF)";
+        callAmount.text = $"(${game.Players[0].LastAction().Money})";
         resultsScreen.SetActive(true);
     }
 
