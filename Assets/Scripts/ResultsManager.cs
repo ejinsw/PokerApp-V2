@@ -40,6 +40,10 @@ public class ResultsManager : MonoBehaviour
     [SerializeField] private TMP_Text foldEv;
     [SerializeField] private TMP_Text callEv;
     [SerializeField] private TMP_Text reraiseEv;
+    
+    [SerializeField] private TMP_Text foldAmount;
+    [SerializeField] private TMP_Text callAmount;
+    [SerializeField] private TMP_Text reraiseAmount;
 
     #endregion
 
