@@ -61,7 +61,7 @@ public class ResultsManager : MonoBehaviour
         {
             Destroy(t.gameObject);
         }
-        
+
         foreach (PlayerAction p in game.ActionLog)
         {
             Debug.Log(Enum.GetName(typeof(ActionType), p.ActionType) + ": " + p.Money);
@@ -73,13 +73,13 @@ public class ResultsManager : MonoBehaviour
         {
             GameManager.instance.CreateCard(c, cardPrefab, userHand, 1.6f);
         }
-        
+
         List<Card> cc = game.CommunityCards.Select(card => card.Clone()).ToList();
         foreach (Card c in cc)
         {
             GameManager.instance.CreateCard(c, cardPrefab, communityCards, 1.6f);
         }
-        
+
         int handEq = Utilities.HandEquity(gameSettings.scenario, game.CommunityCards.Count);
         int potOddsRatio1 = Utilities.PotOdds((int)game.Pot, (int)game.Players[0].LastAction().Money).first;
         int potOddsRatio2 = Utilities.PotOdds((int)game.Pot, (int)game.Players[0].LastAction().Money).second;
@@ -87,6 +87,7 @@ public class ResultsManager : MonoBehaviour
         potOddsRatio1 /= gcd;
         potOddsRatio2 /= gcd;
         int actionEV = (int)Math.Round(handEq / 100.0f * (game.Pot + 2 * game.User.LastAction().Money) - game.User.LastAction().Money);
+        if (game.User.LastAction().Money == 0) actionEV = 0;
         Utilities.Statistics results = Utilities.Options(handEq, (int)game.Pot, (int)game.Players[0].LastAction().Money);
 
         pot.text = $"Pot: ${game.Pot}";
@@ -94,11 +95,22 @@ public class ResultsManager : MonoBehaviour
         villainFoldEquity.text = $"Villain Fold Equity: 0";
         villainRaise.text = $"Villain Raise: ${game.Players[0].LastAction().Money}";
         potOdds.text = $"Pot Odds: {potOddsRatio1}:{potOddsRatio2}";
-        userAction.text = $"You Chose: {Enum.GetName(typeof(ActionType), game.User.LastAction().ActionType)} ${game.User.LastAction().Money}";
-        userEv.text = $"User EV: ${actionEV}";
-        foldEv.text = $"$0";
-        callEv.text = $"${results.callEv}";
-        reraiseEv.text = "$" + (gameSettings.userStartingMoney < 2 * game.Players[0].LastAction().Money ? "N/A" : results.reraiseEv);
+        if (game.User.LastAction().Money == 0)
+        {
+            userAction.text = "Hero Folds";
+        }
+        else if (game.User.LastAction().Money == game.Players[0].LastAction().Money)
+        {
+            userAction.text = $"Hero {Enum.GetName(typeof(ActionType), game.User.LastAction().ActionType)}: ${game.User.LastAction().Money}";
+        }
+        else
+        {
+            userAction.text = $"Hero Re{Enum.GetName(typeof(ActionType), game.User.LastAction().ActionType)}: ${game.User.LastAction().Money}";
+        }
+        userEv.text = $"{actionEV} EV";
+        foldEv.text = $"0 EV";
+        callEv.text = $"{results.callEv} EV";
+        reraiseEv.text = (gameSettings.userStartingMoney < 2 * game.Players[0].LastAction().Money ? "N/A" : "0 EV -> " + results.reraiseEv + " EV");
 
         resultsScreen.SetActive(true);
     }
