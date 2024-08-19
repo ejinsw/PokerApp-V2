@@ -69,6 +69,7 @@ public class GameManager : MonoBehaviour
 
     [SerializeField] private TMP_Text potText;
 
+    [SerializeField] TMP_Text scenarioText;
     [SerializeField] TMP_Text hintText;
     [SerializeField] GameObject hintObject;
 
@@ -582,8 +583,9 @@ public class GameManager : MonoBehaviour
         int gcd = Utilities.GCD(potOdds.first, potOdds.second);
         potOdds.first /= gcd != 0 ? gcd : 1;
         potOdds.second /= gcd != 0 ? gcd : 1;
-        
-        string text = $"<b>Straight Draw</b>\n\nHand Equity:\t<b>{handEq}%</b>\nPot Odds:\t\t<b>{potOdds.first}:{potOdds.second}</b>\n";
+
+        scenarioText.text = selectedGameSettings.settingsName;
+        string text = $"Hand Equity:\t<b>{handEq}%</b>\nPot Odds:\t\t<b>{potOdds.first}:{potOdds.second}</b>\n";
         hintText.text = text;
     }
     

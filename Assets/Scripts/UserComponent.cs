@@ -19,7 +19,7 @@ public class UserComponent : MonoBehaviour
     public void Initialize(Player user)
     {
         User = user;
-        money.text = "$" + User.Money;
+        // money.text = "$" + User.Money;
         if (User.Cards.Count > 0 && User.Cards[0] != null)
             card1.Initialize(User.Cards[0]);
         if (User.Cards.Count > 1 && User.Cards[1] != null)
@@ -30,7 +30,7 @@ public class UserComponent : MonoBehaviour
 
     public void UpdateUI()
     {
-        money.text = "$" + User.Money;
+        // money.text = "$" + User.Money;
     }
     
     public IEnumerator UserTurn()
