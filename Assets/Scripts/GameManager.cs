@@ -73,6 +73,8 @@ public class GameManager : MonoBehaviour
     [SerializeField] TMP_Text hintText;
     [SerializeField] GameObject hintObject;
 
+    [SerializeField] Popup popup;
+
     #endregion
 
     #endregion
@@ -417,7 +419,6 @@ public class GameManager : MonoBehaviour
         }
         
         ToggleHint(false);
-        SetHint();
 
         #endregion
 
@@ -446,7 +447,7 @@ public class GameManager : MonoBehaviour
             // if (p.LastAction() != null
             //     && game.LastRaiser != null
             //     && p.LastAction().Money == game.LastRaiser.LastAction().Money) continue; // skip ppl who called already
-
+            
             if (p == game.User)
             {
                 yield return StartCoroutine(userComponent.UserTurn());
@@ -492,7 +493,6 @@ public class GameManager : MonoBehaviour
 
             potText.text = $"${game.GetPot()}";
             
-            SetHint();
 
             Debug.Log(p.Name + " " + Enum.GetName(typeof(ActionType), p.LastAction().ActionType) + ": " + p.LastAction().Money);
         }
@@ -571,11 +571,6 @@ public class GameManager : MonoBehaviour
 
     public void ToggleHint(bool toggle = true)
     {
-        hintObject.SetActive(toggle ? !hintObject.activeInHierarchy : false);
-    }
-    
-    public void SetHint()
-    {
         int handEq = Utilities.HandEquity(selectedGameSettings.scenario, game.CommunityCards.Count);
         int raise = game.LastRaiser != null && game.LastRaiser.LastAction() != null ? (int)game.LastRaiser.LastAction().Money : 0;
         Utilities.Odds potOdds = Utilities.PotOdds((int)game.Pot, raise);
@@ -586,7 +581,9 @@ public class GameManager : MonoBehaviour
 
         scenarioText.text = selectedGameSettings.settingsName;
         string text = $"Hand Equity:\t<b>{handEq}%</b>\nPot Odds:\t\t<b>{potOdds.first}:{potOdds.second}</b>\n";
-        hintText.text = text;
+        
+        hintObject.SetActive(toggle ? !hintObject.activeInHierarchy : false);
+        if (toggle) StartCoroutine(popup.Activate(new Vector2(446, 819), text, false, false));
     }
     
     public void UserAction(ActionType action)
