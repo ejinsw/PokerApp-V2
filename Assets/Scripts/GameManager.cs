@@ -448,8 +448,7 @@ public class GameManager : MonoBehaviour
             //     && game.LastRaiser != null
             //     && p.LastAction().Money == game.LastRaiser.LastAction().Money) continue; // skip ppl who called already
             
-            if (p == game.User)
-            {
+            if (p == game.User) {
                 yield return StartCoroutine(userComponent.UserTurn());
                 
                 userComponent.UpdateUI();
