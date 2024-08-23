@@ -59,6 +59,8 @@ public class GameManager : MonoBehaviour
     [SerializeField] private GameObject cardHorizontalPrefab;
     [SerializeField] private Transform communityCardsTransform;
 
+    [SerializeField] List<GameObject> disabledButtons;
+    
     [SerializeField] private Button foldButton;
     [SerializeField] private Button checkButton;
     [SerializeField] private Button callButton;
@@ -449,12 +451,14 @@ public class GameManager : MonoBehaviour
             //     && p.LastAction().Money == game.LastRaiser.LastAction().Money) continue; // skip ppl who called already
             
             if (p == game.User) {
+                
                 yield return StartCoroutine(userComponent.UserTurn());
                 
                 userComponent.UpdateUI();
             }
             else
             {
+                DisableUserButtons(true);
                 #region Null Check
 
                 if (!playerComponents.ContainsKey(p) || playerComponents[p] == null)
@@ -503,7 +507,7 @@ public class GameManager : MonoBehaviour
 
         // game.LastRaiser = null;
 
-        yield return new WaitForSeconds(1);
+        yield return new WaitForSeconds(0.3f);
 
         ResultsManager.instance.InitializeResults(game, selectedGameSettings);
         yield return null;
@@ -564,6 +568,21 @@ public class GameManager : MonoBehaviour
                 raiseButton.gameObject.SetActive(true);
                 raiseSlider.gameObject.SetActive(true);
                 // raiseText.gameObject.SetActive(true);
+            }
+        }
+    }
+
+    public void DisableUserButtons(bool disable)
+    {
+        if (disable) {
+            ActivateButtons(false);
+            foreach (GameObject button in disabledButtons) {
+                button.SetActive(true);
+            }
+        }
+        else {
+            foreach (GameObject button in disabledButtons) {
+                button.SetActive(false);
             }
         }
     }

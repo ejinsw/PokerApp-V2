@@ -37,6 +37,7 @@ public class UserComponent : MonoBehaviour
     {
         Debug.Log("User's turn started.");
         GameManager.instance.userTurn = true;
+        GameManager.instance.DisableUserButtons(false);
         GameManager.instance.ActivateButtons(true);
         yield return new WaitUntil(() => !GameManager.instance.userTurn);
 
@@ -68,8 +69,6 @@ public class UserComponent : MonoBehaviour
 
         if (GameManager.instance.game.User.LastAction() != null)
             GameManager.instance.game.ActionLog.Add(GameManager.instance.game.User.LastAction());
-
-        GameManager.instance.ActivateButtons(false);
     }
 
     public IEnumerator Fold()
