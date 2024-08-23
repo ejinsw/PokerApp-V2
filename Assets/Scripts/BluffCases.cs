@@ -72,10 +72,10 @@ namespace Poker
 
             if (IsStraightFlushDraw(cards))
                 bluffCases.Add(BluffCase.StraightFlushDraw);
-            
+
             if (IsFlush(cards))
                 bluffCases.Add(BluffCase.Flush);
-            
+
             if (IsStraight(cards))
                 bluffCases.Add(BluffCase.Straight);
 
@@ -85,7 +85,8 @@ namespace Poker
         public static bool IsFlushDraw(List<Card> cards)
         {
             // There aren't enough cards
-            if (cards.Count < 4) {
+            if (cards.Count < 4)
+            {
                 return false;
             }
 
@@ -98,7 +99,8 @@ namespace Poker
         public static bool IsBackdoorFlushDraw(List<Card> cards)
         {
             // There aren't enough cards
-            if (cards.Count < 3) {
+            if (cards.Count < 3)
+            {
                 return false;
             }
 
@@ -117,13 +119,15 @@ namespace Poker
         public static bool IsStraightDraw(List<Card> cards)
         {
             // There aren't enough cards
-            if (cards.Count < 4) {
+            if (cards.Count < 4)
+            {
                 return false;
             }
 
             List<Rank> ranks = cards.Select(card => card.Rank).Distinct().OrderBy(rank => rank).ToList();
             // Only consider the first 4 distinct ranks
-            if (ranks.Count < 4) {
+            if (ranks.Count < 4)
+            {
                 return false;
             }
 
@@ -138,7 +142,8 @@ namespace Poker
         public static bool IsStraightFlushDraw(List<Card> cards)
         {
             // There aren't enough cards
-            if (cards.Count < 4) {
+            if (cards.Count < 4)
+            {
                 return false;
             }
 
@@ -184,13 +189,15 @@ namespace Poker
         public static bool IsGutshot(List<Card> cards)
         {
             // There aren't enough cards
-            if (cards.Count < 4) {
+            if (cards.Count < 4)
+            {
                 return false;
             }
 
             List<Rank> ranks = cards.Select(card => card.Rank).Distinct().OrderBy(rank => rank).ToList();
             // Only consider the first 4 distinct ranks
-            if (ranks.Count < 4) {
+            if (ranks.Count < 4)
+            {
                 return false;
             }
 
@@ -198,11 +205,13 @@ namespace Poker
                 .Select((rank, index) => new { Rank = rank, GroupKey = (int)rank - index })
                 .GroupBy(x => x.GroupKey, x => x.Rank);
 
-            if (neighbors.Count() == 2) {
+            if (neighbors.Count() == 2)
+            {
                 List<Rank> firstGroup = neighbors.First().ToList();
                 List<Rank> secondGroup = neighbors.Last().ToList();
 
-                if (IsNeighborRank(firstGroup.Last() + 1, secondGroup.First())) {
+                if (IsNeighborRank(firstGroup.Last() + 1, secondGroup.First()))
+                {
                     return true;
                 }
             }
@@ -248,7 +257,8 @@ namespace Poker
 
         public static bool IsFullHouse(List<Card> cards)
         {
-            if (NumberOfPairs(cards) != 0 && IsTriples(cards)) {
+            if (NumberOfPairs(cards) != 0 && IsTriples(cards))
+            {
                 return true;
             }
 
@@ -280,30 +290,31 @@ namespace Poker
         public static List<Card> ScenarioCC(BluffCase scenario, ref List<Card> deck, int size)
         {
             List<Card> cc = new();
-            switch (scenario) {
-            case BluffCase.None:
-                break;
-            case BluffCase.UnderPair:
-                cc = UnderPairCc(ref deck, size);
-                break;
-            case BluffCase.OverPair:
-                cc = OverPairCc(ref deck, size);
-                break;
-            case BluffCase.StraightDraw:
-                cc = StraightDrawCc(ref deck, size);
-                break;
-            case BluffCase.GutShot:
-                cc = StraightDrawCc(ref deck, size);
-                break;
-            case BluffCase.BackdoorFlushDraw:
-                cc = BackDoorFlushDrawCc(ref deck, size);
-                break;
-            case BluffCase.FlushDraw:
-                cc = FlushDrawCc(ref deck, size);
-                break;
-            case BluffCase.StraightFlushDraw:
-                cc = StraightDrawCc(ref deck, size);
-                break;
+            switch (scenario)
+            {
+                case BluffCase.None:
+                    break;
+                case BluffCase.UnderPair:
+                    cc = UnderPairCc(ref deck, size);
+                    break;
+                case BluffCase.OverPair:
+                    cc = OverPairCc(ref deck, size);
+                    break;
+                case BluffCase.StraightDraw:
+                    cc = StraightDrawCc(ref deck, size);
+                    break;
+                case BluffCase.GutShot:
+                    cc = StraightDrawCc(ref deck, size);
+                    break;
+                case BluffCase.BackdoorFlushDraw:
+                    cc = BackDoorFlushDrawCc(ref deck, size);
+                    break;
+                case BluffCase.FlushDraw:
+                    cc = FlushDrawCc(ref deck, size);
+                    break;
+                case BluffCase.StraightFlushDraw:
+                    cc = StraightDrawCc(ref deck, size);
+                    break;
             }
 
             return cc;
@@ -312,30 +323,31 @@ namespace Poker
         public static List<Card> ScenarioP(BluffCase scenario, ref List<Card> deck, List<Card> cc)
         {
             List<Card> cards = new();
-            switch (scenario) {
-            case BluffCase.None:
-                break;
-            case BluffCase.UnderPair:
-                cards = UnderPairP(ref deck, cc);
-                break;
-            case BluffCase.OverPair:
-                cards = OverPairP(ref deck, cc);
-                break;
-            case BluffCase.StraightDraw:
-                cards = StraightDrawP(ref deck, cc);
-                break;
-            case BluffCase.GutShot:
-                cards = GutShotP(ref deck, cc);
-                break;
-            case BluffCase.BackdoorFlushDraw:
-                cards = BackDoorFlushDrawP(ref deck, cc);
-                break;
-            case BluffCase.FlushDraw:
-                cards = FlushDrawP(ref deck, cc);
-                break;
-            case BluffCase.StraightFlushDraw:
-                cards = StraightFlushDrawP(ref deck, cc);
-                break;
+            switch (scenario)
+            {
+                case BluffCase.None:
+                    break;
+                case BluffCase.UnderPair:
+                    cards = UnderPairP(ref deck, cc);
+                    break;
+                case BluffCase.OverPair:
+                    cards = OverPairP(ref deck, cc);
+                    break;
+                case BluffCase.StraightDraw:
+                    cards = StraightDrawP(ref deck, cc);
+                    break;
+                case BluffCase.GutShot:
+                    cards = GutShotP(ref deck, cc);
+                    break;
+                case BluffCase.BackdoorFlushDraw:
+                    cards = BackDoorFlushDrawP(ref deck, cc);
+                    break;
+                case BluffCase.FlushDraw:
+                    cards = FlushDrawP(ref deck, cc);
+                    break;
+                case BluffCase.StraightFlushDraw:
+                    cards = StraightFlushDrawP(ref deck, cc);
+                    break;
             }
 
             return cards;
@@ -344,9 +356,12 @@ namespace Poker
         public static List<Card> FlushDrawCc(ref List<Card> deck, int size)
         {
             List<Card> cards = Utilities.HandSuited(ref deck);
-            for (int i = 0; i < size - 2; i++) {
-                foreach (Card c in deck) {
-                    if (cards[0].Suit != c.Suit) {
+            for (int i = 0; i < size - 2; i++)
+            {
+                foreach (Card c in deck)
+                {
+                    if (cards[0].Suit != c.Suit)
+                    {
                         cards.Add(c);
                         Utilities.DeckTakeCards(ref deck, cards);
                         break;
@@ -359,21 +374,23 @@ namespace Poker
 
         public static List<Card> FlushDrawP(ref List<Card> deck, List<Card> cc)
         {
-            if (cc.Count == 0) {
+            if (cc.Count == 0)
+            {
                 return null;
             }
 
             return Utilities.HandSuited(ref deck, cc[0].Suit);
         }
 
-        public static List<Card> BackDoorFlushDrawCc(ref List<Card> deck, int size)
+        public static List<Card> FlushDrawPairCc(ref List<Card> deck, int size)
         {
-            List<Card> cards = new();
-            cards.Add(deck[0]);
-            Utilities.DeckTakeCards(ref deck, cards);
-            for (int i = 0; i < 2; i++) {
-                foreach (Card c in deck) {
-                    if (cards[0].Suit != c.Suit) {
+            List<Card> cards = Utilities.HandSuited(ref deck);
+            for (int i = 0; i < size - 2; i++)
+            {
+                foreach (Card c in deck)
+                {
+                    if (cards[0].Suit != c.Suit)
+                    {
                         cards.Add(c);
                         Utilities.DeckTakeCards(ref deck, cards);
                         break;
@@ -384,9 +401,74 @@ namespace Poker
             return cards;
         }
 
+        public static List<Card> FlushDrawPairP(ref List<Card> deck, List<Card> cc)
+        {
+            if (cc.Count == 0)
+            {
+                return null;
+            }
+            List<Card> cards = new();
+            List<Card> sortedCards = cc.OrderBy(card => card.Rank).ToList();
+            int rand = Utilities.RandomInt(0, 1);
+            int index = 0;
+            if (sortedCards[0].Rank == 0) index = 1;
+            for (int i = 0; i < 2; i++)
+            {
+                if (i == rand)
+                {
+                    foreach (Card c in deck)
+                    {
+                        if (c.Suit == cards[0].Suit && c.Rank == cards[index].Rank)
+                        {
+                            cards.Add(c);
+                            Utilities.DeckTakeCards(ref deck, cards);
+                            break;
+                        }
+                    }
+                }
+                else
+                {
+                    foreach (Card c in deck)
+                    {
+                        if (c.Suit == cards[0].Suit)
+                        {
+                            cards.Add(c);
+                            Utilities.DeckTakeCards(ref deck, cards);
+                            break;
+                        }
+                    }
+                }
+            }
+
+            return cards;
+        }
+
+        public static List<Card> BackDoorFlushDrawCc(ref List<Card> deck, int size)
+        {
+            List<Card> cards = new();
+            cards.Add(deck[0]);
+            Utilities.DeckTakeCards(ref deck, cards);
+            for (int i = 0; i < 2; i++)
+            {
+                foreach (Card c in deck)
+                {
+                    if (cards[0].Suit != c.Suit)
+                    {
+                        cards.Add(c);
+                        Utilities.DeckTakeCards(ref deck, cards);
+                        break;
+                    }
+                }
+            }
+
+            return cards;
+        }
+
+
         public static List<Card> BackDoorFlushDrawP(ref List<Card> deck, List<Card> cc)
         {
-            if (cc.Count == 0) {
+            if (cc.Count == 0)
+            {
                 return null;
             }
 
@@ -401,49 +483,65 @@ namespace Poker
             int pos1 = Utilities.RandomInt(0, size - 1);
             int pos2;
             int pos3 = 0;
-            do {
+            do
+            {
                 pos2 = Utilities.RandomInt(0, size - 1);
             } while (pos1 == pos2);
 
-            for (int i = 0; i < size; i++) {
-                if (i != pos1 && i != pos2) {
+            for (int i = 0; i < size; i++)
+            {
+                if (i != pos1 && i != pos2)
+                {
                     pos3 = i;
                     break;
                 }
             }
 
             Rank r = (Rank)rand;
-            for (int i = 0; i < size; i++) {
-                if (i == pos1) {
-                    foreach (Card c in deck) {
-                        if (c.Rank == r) {
+            for (int i = 0; i < size; i++)
+            {
+                if (i == pos1)
+                {
+                    foreach (Card c in deck)
+                    {
+                        if (c.Rank == r)
+                        {
                             cards.Add(c);
                             Utilities.DeckTakeCards(ref deck, cards);
                             break;
                         }
                     }
                 }
-                else if (i == pos2) {
-                    foreach (Card c in deck) {
-                        if (c.Rank == r + 1) {
+                else if (i == pos2)
+                {
+                    foreach (Card c in deck)
+                    {
+                        if (c.Rank == r + 1)
+                        {
                             cards.Add(c);
                             Utilities.DeckTakeCards(ref deck, cards);
                             break;
                         }
                     }
                 }
-                else if (i == pos3) {
-                    foreach (Card c in deck) {
-                        if (c.Rank == r + 2) {
+                else if (i == pos3)
+                {
+                    foreach (Card c in deck)
+                    {
+                        if (c.Rank == r + 2)
+                        {
                             cards.Add(c);
                             Utilities.DeckTakeCards(ref deck, cards);
                             break;
                         }
                     }
                 }
-                else {
-                    foreach (Card c in deck) {
-                        if (c.Rank != r + 3 && c.Rank != r - 1 && c.Rank != r + 4 && c.Rank != r - 2) {
+                else
+                {
+                    foreach (Card c in deck)
+                    {
+                        if (c.Rank != r + 3 && c.Rank != r - 1 && c.Rank != r + 4 && c.Rank != r - 2)
+                        {
                             cards.Add(c);
                             Utilities.DeckTakeCards(ref deck, cards);
                             break;
@@ -457,7 +555,8 @@ namespace Poker
 
         public static List<Card> StraightDrawP(ref List<Card> deck, List<Card> cc)
         {
-            if (cc.Count == 0) {
+            if (cc.Count == 0)
+            {
                 return null;
             }
 
@@ -467,25 +566,33 @@ namespace Poker
             min = sortedCards[0].Rank == (sortedCards[1].Rank - 1)
                 ? (int)sortedCards[0].Rank
                 : (int)sortedCards[1].Rank;
-            if (min == 1 || min == 0) {
+            if (min == 1 || min == 0)
+            {
                 min += 3;
             }
-            else {
+            else
+            {
                 min += Utilities.RandomInt(0, 1) == 1 ? 3 : -1;
             }
-            foreach (Card c in deck) {
-                if ((int)c.Rank == min) {
+            foreach (Card c in deck)
+            {
+                if ((int)c.Rank == min)
+                {
                     cards.Add(c);
                     Utilities.DeckTakeCards(ref deck, cards);
                     break;
                 }
             }
 
-            foreach (Card c in deck) {
-                if ((int)c.Rank != min - 1 && (int)c.Rank != min + 1 && (int)c.Rank != min + 4 && (int)c.Rank != min - 4) {
-                    if ((min == 12 && c.Rank != 0)) {
+            foreach (Card c in deck)
+            {
+                if ((int)c.Rank != min - 1 && (int)c.Rank != min + 1 && (int)c.Rank != min + 4 && (int)c.Rank != min - 4)
+                {
+                    if ((min == 12 && c.Rank != 0))
+                    {
                     }
-                    else {
+                    else
+                    {
                         cards.Add(c);
                         Utilities.DeckTakeCards(ref deck, cards);
                         break;
@@ -496,9 +603,87 @@ namespace Poker
             return cards;
         }
 
-        public static List<Card> GutShotP(ref List<Card> deck, List<Card> cc)
+        public static List<Card> StraightDrawPairCc(ref List<Card> deck, int size)
         {
-            if (cc.Count == 0) {
+            List<Card> cards = new();
+            int rand = Utilities.RandomInt(1, 9);
+            int pos1 = Utilities.RandomInt(0, size - 1);
+            int pos2;
+            int pos3 = 0;
+            do
+            {
+                pos2 = Utilities.RandomInt(0, size - 1);
+            } while (pos1 == pos2);
+
+            for (int i = 0; i < size; i++)
+            {
+                if (i != pos1 && i != pos2)
+                {
+                    pos3 = i;
+                    break;
+                }
+            }
+
+            Rank r = (Rank)rand;
+            for (int i = 0; i < size; i++)
+            {
+                if (i == pos1)
+                {
+                    foreach (Card c in deck)
+                    {
+                        if (c.Rank == r)
+                        {
+                            cards.Add(c);
+                            Utilities.DeckTakeCards(ref deck, cards);
+                            break;
+                        }
+                    }
+                }
+                else if (i == pos2)
+                {
+                    foreach (Card c in deck)
+                    {
+                        if (c.Rank == r + 1)
+                        {
+                            cards.Add(c);
+                            Utilities.DeckTakeCards(ref deck, cards);
+                            break;
+                        }
+                    }
+                }
+                else if (i == pos3)
+                {
+                    foreach (Card c in deck)
+                    {
+                        if (c.Rank == r + 2)
+                        {
+                            cards.Add(c);
+                            Utilities.DeckTakeCards(ref deck, cards);
+                            break;
+                        }
+                    }
+                }
+                else
+                {
+                    foreach (Card c in deck)
+                    {
+                        if (c.Rank != r + 3 && c.Rank != r - 1 && c.Rank != r + 4 && c.Rank != r - 2)
+                        {
+                            cards.Add(c);
+                            Utilities.DeckTakeCards(ref deck, cards);
+                            break;
+                        }
+                    }
+                }
+            }
+
+            return cards;
+        }
+
+        public static List<Card> StraightDrawPairP(ref List<Card> deck, List<Card> cc)
+        {
+            if (cc.Count == 0)
+            {
                 return null;
             }
 
@@ -508,23 +693,85 @@ namespace Poker
             min = sortedCards[0].Rank == (sortedCards[1].Rank - 1)
                 ? (int)sortedCards[0].Rank
                 : (int)sortedCards[1].Rank;
-            if (min == 1 || min == 0) {
-                min += 4;
+            if (min == 1 || min == 0)
+            {
+                min += 3;
             }
-            else {
-                min += Utilities.RandomInt(0, 1) == 1 ? 4 : -2;
+            else
+            {
+                min += Utilities.RandomInt(0, 1) == 1 ? 3 : -1;
             }
-
-            foreach (Card c in deck) {
-                if ((int)c.Rank == min) {
+            foreach (Card c in deck)
+            {
+                if ((int)c.Rank == min)
+                {
                     cards.Add(c);
                     Utilities.DeckTakeCards(ref deck, cards);
                     break;
                 }
             }
 
-            foreach (Card c in deck) {
-                if ((int)c.Rank != min + 1 && (int)c.Rank != min - 1) {
+            foreach (Card c in deck)
+            {
+                if (sortedCards[0].Rank == 0)
+                {
+                    if (c.Rank == sortedCards[1].Rank)
+                    {
+                        cards.Add(c);
+                        Utilities.DeckTakeCards(ref deck, cards);
+                        break;
+                    }
+                }
+                else
+                {
+                    if (c.Rank == sortedCards[0].Rank)
+                    {
+                        cards.Add(c);
+                        Utilities.DeckTakeCards(ref deck, cards);
+                        break;
+                    }
+                }
+            }
+            return cards;
+        }
+
+
+        public static List<Card> GutShotP(ref List<Card> deck, List<Card> cc)
+        {
+            if (cc.Count == 0)
+            {
+                return null;
+            }
+
+            List<Card> cards = new();
+            int min = 0;
+            List<Card> sortedCards = cc.OrderBy(card => card.Rank).ToList();
+            min = sortedCards[0].Rank == (sortedCards[1].Rank - 1)
+                ? (int)sortedCards[0].Rank
+                : (int)sortedCards[1].Rank;
+            if (min == 1 || min == 0)
+            {
+                min += 4;
+            }
+            else
+            {
+                min += Utilities.RandomInt(0, 1) == 1 ? 4 : -2;
+            }
+
+            foreach (Card c in deck)
+            {
+                if ((int)c.Rank == min)
+                {
+                    cards.Add(c);
+                    Utilities.DeckTakeCards(ref deck, cards);
+                    break;
+                }
+            }
+
+            foreach (Card c in deck)
+            {
+                if ((int)c.Rank != min + 1 && (int)c.Rank != min - 1)
+                {
                     cards.Add(c);
                     Utilities.DeckTakeCards(ref deck, cards);
                     break;
@@ -537,9 +784,12 @@ namespace Poker
         {
             List<Card> cards = new();
 
-            for (int i = 0; i < size; i++) {
-                foreach (Card c in deck) {
-                    if ((int)c.Rank != 1) {
+            for (int i = 0; i < size; i++)
+            {
+                foreach (Card c in deck)
+                {
+                    if ((int)c.Rank != 1)
+                    {
                         cards.Add(c);
                         Utilities.DeckTakeCards(ref deck, cards);
                         break;
@@ -551,7 +801,8 @@ namespace Poker
 
         public static List<Card> UnderPairP(ref List<Card> deck, List<Card> cc)
         {
-            if (cc.Count == 0) {
+            if (cc.Count == 0)
+            {
                 return null;
             }
 
@@ -560,20 +811,25 @@ namespace Poker
             List<Card> sortedCards = cc.OrderBy(card => card.Rank).ToList();
             min = sortedCards[0].Rank;
             int i = 0;
-            while (min == 0) {
+            while (min == 0)
+            {
                 min = sortedCards[++i].Rank;
             }
             Rank r = 0;
-            foreach (Card c in deck) {
-                if (c.Rank < min && c.Rank != 0) {
+            foreach (Card c in deck)
+            {
+                if (c.Rank < min && c.Rank != 0)
+                {
                     cards.Add(c);
                     Utilities.DeckTakeCards(ref deck, cards);
                     r = c.Rank;
                     break;
                 }
             }
-            foreach (Card c in deck) {
-                if (c.Rank == r) {
+            foreach (Card c in deck)
+            {
+                if (c.Rank == r)
+                {
                     cards.Add(c);
                     Utilities.DeckTakeCards(ref deck, cards);
                     break;
@@ -586,9 +842,12 @@ namespace Poker
         {
             List<Card> cards = new();
 
-            for (int i = 0; i < size; i++) {
-                foreach (Card c in deck) {
-                    if ((int)c.Rank > 1) {
+            for (int i = 0; i < size; i++)
+            {
+                foreach (Card c in deck)
+                {
+                    if ((int)c.Rank > 1)
+                    {
                         cards.Add(c);
                         Utilities.DeckTakeCards(ref deck, cards);
                         break;
@@ -600,7 +859,8 @@ namespace Poker
 
         public static List<Card> OverPairP(ref List<Card> deck, List<Card> cc)
         {
-            if (cc.Count == 0) {
+            if (cc.Count == 0)
+            {
                 return null;
             }
 
@@ -610,16 +870,20 @@ namespace Poker
             max = sortedCards[sortedCards.Count - 1].Rank;
             Rank r = 0;
 
-            foreach (Card c in deck) {
-                if (c.Rank > max || c.Rank == 0) {
+            foreach (Card c in deck)
+            {
+                if (c.Rank > max || c.Rank == 0)
+                {
                     cards.Add(c);
                     Utilities.DeckTakeCards(ref deck, cards);
                     r = c.Rank;
                     break;
                 }
             }
-            foreach (Card c in deck) {
-                if (c.Rank == r) {
+            foreach (Card c in deck)
+            {
+                if (c.Rank == r)
+                {
                     cards.Add(c);
                     Utilities.DeckTakeCards(ref deck, cards);
                     break;
@@ -637,58 +901,77 @@ namespace Poker
             int pos2;
             int pos3 = 0;
             Suit s = 0;
-            do {
+            do
+            {
                 pos2 = Utilities.RandomInt(0, size - 1);
             } while (pos1 == pos2);
 
-            for (int i = 0; i < size; i++) {
-                if (i != pos1 && i != pos2) {
+            for (int i = 0; i < size; i++)
+            {
+                if (i != pos1 && i != pos2)
+                {
                     pos3 = i;
                     break;
                 }
             }
             int first = Math.Min(pos1, Math.Min(pos2, pos3));
             int second;
-            if (size == 3) {
+            if (size == 3)
+            {
                 second = 2;
             }
-            else {
+            else
+            {
                 second = Utilities.RandomInt(2, 3);
             }
 
             Rank r = (Rank)rand;
-            for (int i = 0; i < size; i++) {
-                if (i == second) {
-                    if (i == pos1) {
-                        foreach (Card c in deck) {
-                            if (c.Suit == s && c.Rank == r) {
+            for (int i = 0; i < size; i++)
+            {
+                if (i == second)
+                {
+                    if (i == pos1)
+                    {
+                        foreach (Card c in deck)
+                        {
+                            if (c.Suit == s && c.Rank == r)
+                            {
                                 cards.Add(c);
                                 Utilities.DeckTakeCards(ref deck, cards);
                                 break;
                             }
                         }
                     }
-                    else if (i == pos2) {
-                        foreach (Card c in deck) {
-                            if (c.Suit == s && c.Rank == r + 1) {
+                    else if (i == pos2)
+                    {
+                        foreach (Card c in deck)
+                        {
+                            if (c.Suit == s && c.Rank == r + 1)
+                            {
                                 cards.Add(c);
                                 Utilities.DeckTakeCards(ref deck, cards);
                                 break;
                             }
                         }
                     }
-                    else if (i == pos3) {
-                        foreach (Card c in deck) {
-                            if (c.Suit == s && c.Rank == r + 2) {
+                    else if (i == pos3)
+                    {
+                        foreach (Card c in deck)
+                        {
+                            if (c.Suit == s && c.Rank == r + 2)
+                            {
                                 cards.Add(c);
                                 Utilities.DeckTakeCards(ref deck, cards);
                                 break;
                             }
                         }
                     }
-                    else {
-                        foreach (Card c in deck) {
-                            if (c.Suit == s && c.Rank != r + 3 && c.Rank != r - 1 && c.Rank != r + 4 && c.Rank != r - 2) {
+                    else
+                    {
+                        foreach (Card c in deck)
+                        {
+                            if (c.Suit == s && c.Rank != r + 3 && c.Rank != r - 1 && c.Rank != r + 4 && c.Rank != r - 2)
+                            {
                                 cards.Add(c);
                                 Utilities.DeckTakeCards(ref deck, cards);
                                 break;
@@ -698,10 +981,14 @@ namespace Poker
                 }
                 else //if i is not second
                 {
-                    if (i == pos1) {
-                        foreach (Card c in deck) {
-                            if (c.Rank == r) {
-                                if (i == first) {
+                    if (i == pos1)
+                    {
+                        foreach (Card c in deck)
+                        {
+                            if (c.Rank == r)
+                            {
+                                if (i == first)
+                                {
                                     s = c.Suit;
                                 }
                                 cards.Add(c);
@@ -710,10 +997,14 @@ namespace Poker
                             }
                         }
                     }
-                    else if (i == pos2) {
-                        foreach (Card c in deck) {
-                            if (c.Rank == r + 1) {
-                                if (i == first) {
+                    else if (i == pos2)
+                    {
+                        foreach (Card c in deck)
+                        {
+                            if (c.Rank == r + 1)
+                            {
+                                if (i == first)
+                                {
                                     s = c.Suit;
                                 }
                                 cards.Add(c);
@@ -722,10 +1013,14 @@ namespace Poker
                             }
                         }
                     }
-                    else if (i == pos3) {
-                        foreach (Card c in deck) {
-                            if (c.Rank == r + 2) {
-                                if (i == first) {
+                    else if (i == pos3)
+                    {
+                        foreach (Card c in deck)
+                        {
+                            if (c.Rank == r + 2)
+                            {
+                                if (i == first)
+                                {
                                     s = c.Suit;
                                 }
                                 cards.Add(c);
@@ -734,9 +1029,12 @@ namespace Poker
                             }
                         }
                     }
-                    else {
-                        foreach (Card c in deck) {
-                            if (c.Rank != r + 3 && c.Rank != r - 1 && c.Rank != r + 4 && c.Rank != r - 2) {
+                    else
+                    {
+                        foreach (Card c in deck)
+                        {
+                            if (c.Rank != r + 3 && c.Rank != r - 1 && c.Rank != r + 4 && c.Rank != r - 2)
+                            {
                                 cards.Add(c);
                                 Utilities.DeckTakeCards(ref deck, cards);
                                 break;
@@ -751,7 +1049,8 @@ namespace Poker
 
         public static List<Card> StraightFlushDrawP(ref List<Card> deck, List<Card> cc)
         {
-            if (cc.Count == 0) {
+            if (cc.Count == 0)
+            {
                 return null;
             }
             Suit s = cc[0].Suit;
@@ -761,23 +1060,29 @@ namespace Poker
             min = sortedCards[0].Rank == (sortedCards[1].Rank - 1)
                 ? (int)sortedCards[0].Rank
                 : (int)sortedCards[1].Rank;
-            if (min == 1 || min == 0) {
+            if (min == 1 || min == 0)
+            {
                 min += 3;
             }
-            else {
+            else
+            {
                 min += Utilities.RandomInt(0, 1) == 1 ? 3 : -1;
             }
 
-            foreach (Card c in deck) {
-                if (c.Suit == s && (int)c.Rank == min) {
+            foreach (Card c in deck)
+            {
+                if (c.Suit == s && (int)c.Rank == min)
+                {
                     cards.Add(c);
                     Utilities.DeckTakeCards(ref deck, cards);
                     break;
                 }
             }
 
-            foreach (Card c in deck) {
-                if (c.Suit == s && (int)c.Rank != min - 1 && (int)c.Rank != min + 1 && (int)c.Rank != min + 4 && (int)c.Rank != min - 4) {
+            foreach (Card c in deck)
+            {
+                if (c.Suit == s && (int)c.Rank != min - 1 && (int)c.Rank != min + 1 && (int)c.Rank != min + 4 && (int)c.Rank != min - 4)
+                {
                     cards.Add(c);
                     Utilities.DeckTakeCards(ref deck, cards);
                     break;
