@@ -3,14 +3,12 @@ using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class Popup : MonoBehaviour
 {
-    [SerializeField] GameObject arrowBL;
-    [SerializeField] GameObject arrowBR;
-    [SerializeField] GameObject arrowTL;
-    [SerializeField] GameObject arrowTR;
     [SerializeField] TMP_Text text;
+    
 
     bool userInput = false;
     RectTransform rectTransform;
@@ -28,21 +26,8 @@ public class Popup : MonoBehaviour
             userInput = true;
         }
     }
-    public IEnumerator Activate(Vector2 position, string msg, bool bottom, bool left, bool typeText = false)
+    public IEnumerator Activate(string msg, bool typeText = false)
     {
-        // Convert screen position to canvas position
-        Vector2 canvasPosition;
-        RectTransformUtility.ScreenPointToLocalPointInRectangle(
-            rectTransform.parent as RectTransform,
-            position,
-            cam, // Assuming it's a Screen Space - Overlay canvas; pass the camera if Screen Space - Camera
-            out canvasPosition
-        );
-
-        // Set the position of the popup
-        rectTransform.anchoredPosition = position;
-
-
         userInput = false;
         gameObject.SetActive(true);
 
@@ -61,12 +46,9 @@ public class Popup : MonoBehaviour
                 yield return new WaitForSeconds(0.1f);
             }
         }
-
-        arrowBL.SetActive(bottom && left);
-        arrowBR.SetActive(bottom && !left);
-        arrowTL.SetActive(!bottom && left);
-        arrowTR.SetActive(!bottom && !left);
-
+        
+        LayoutRebuilder.ForceRebuildLayoutImmediate(transform.GetChild(0).gameObject.GetComponent<RectTransform>());
+        
         yield return new WaitUntil(() => userInput);
 
         gameObject.SetActive(false);

@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b49d82995841e4e71914bf3ac3d8f0a5, type: 3}
   m_Name: StraightFlushDraw
   m_EditorClassIdentifier: 
-  settingsName: Straight Flush Draw
+  settingsName: Straight Draw + Flush Draw
   userPosition: 1
   randomUserHand: 0
   userHandSuited: 0

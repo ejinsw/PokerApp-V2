@@ -287,6 +287,10 @@ namespace Poker
                     return numCc == 3 ? 17 : 9;
                 case BluffCases.BluffCase.StraightFlushDraw:
                     return numCc == 3 ? 54 : 33;
+                case BluffCases.BluffCase.StraightDrawPair:
+                    return numCc == 3 ? 40 : 20;
+                case BluffCases.BluffCase.FlushDrawPair:
+                    return numCc == 3 ? 44 : 22;
                 default:
                     return 0;
             }

@@ -45,6 +45,15 @@ public class ResultsManager : MonoBehaviour
     [SerializeField] private TMP_Text callAmount;
     [SerializeField] private TMP_Text reraiseAmount;
 
+    [SerializeField] Popup popup;
+
+    [Header("Tip Buttons")] [SerializeField]
+    Button handEqTip;
+    [SerializeField] Button villianFoldEqTip;
+    [SerializeField] Button potOddsTip;
+    [SerializeField] Button evTip;
+    [SerializeField] Button mdfTip;
+
     #endregion
 
     #endregion
@@ -52,35 +61,36 @@ public class ResultsManager : MonoBehaviour
     private void Start()
     {
         resultsScreen.SetActive(false);
+        
+        handEqTip.onClick.AddListener(() => StartCoroutine(popup.Activate("Probability of improving to a winning hand.")));
+        villianFoldEqTip.onClick.AddListener(() => StartCoroutine(popup.Activate("Assuming the villain will not fold.")));
+        potOddsTip.onClick.AddListener(() => StartCoroutine(popup.Activate("The ratio X : Y, where X is the pot size and Y is the villain’s bet, represents the risk (Y) and reward (X) of calling. Your hand equity must exceed X/(X+Y) for a profitable call.")));
+        evTip.onClick.AddListener(() => StartCoroutine(popup.Activate("Expected value of an option is calculated by Win probability * Win amount - Lose probability = * Lose amount. This figure represents what you expect to win/lose from taking this action.")));
+        mdfTip.onClick.AddListener(() => StartCoroutine(popup.Activate("Max fold frequency without giving opponent profitable bluff opportunities.")));
     }
 
     public void InitializeResults(Game game, GameSettings gameSettings)
     {
-        foreach (Transform t in communityCards)
-        {
+        foreach (Transform t in communityCards) {
             Destroy(t.gameObject);
         }
 
-        foreach (Transform t in userHand)
-        {
+        foreach (Transform t in userHand) {
             Destroy(t.gameObject);
         }
 
-        foreach (PlayerAction p in game.ActionLog)
-        {
+        foreach (PlayerAction p in game.ActionLog) {
             Debug.Log(Enum.GetName(typeof(ActionType), p.ActionType) + ": " + p.Money);
         }
 
         // Initialize Cards
         List<Card> hand = game.User.Cards.Select(card => card.Clone()).ToList();
-        foreach (Card c in hand)
-        {
+        foreach (Card c in hand) {
             GameManager.instance.CreateCard(c, cardPrefab, userHand, 1.6f);
         }
 
         List<Card> cc = game.CommunityCards.Select(card => card.Clone()).ToList();
-        foreach (Card c in cc)
-        {
+        foreach (Card c in cc) {
             GameManager.instance.CreateCard(c, cardPrefab, communityCards, 1.6f);
         }
 
@@ -99,31 +109,25 @@ public class ResultsManager : MonoBehaviour
         villainFoldEquity.text = $"Villain Fold Equity: 0";
         villainRaise.text = $"Villain Raise: ${game.Players[0].LastAction().Money}";
         potOdds.text = $"Pot Odds: {potOddsRatio1}:{potOddsRatio2}";
-        if (game.User.LastAction().Money == 0)
-        {
+        if (game.User.LastAction().Money == 0) {
             userAction.text = "Hero Folds";
         }
-        else if (game.User.LastAction().Money == game.Players[0].LastAction().Money)
-        {
+        else if (game.User.LastAction().Money == game.Players[0].LastAction().Money) {
             userAction.text = $"Hero {Enum.GetName(typeof(ActionType), game.User.LastAction().ActionType)}: ${game.User.LastAction().Money}";
         }
-        else
-        {
+        else {
             userAction.text = $"Hero Re{Enum.GetName(typeof(ActionType), game.User.LastAction().ActionType)}: ${game.User.LastAction().Money}";
         }
         userEv.text = $"{actionEV} EV";
         foldEv.text = $"0 EV";
         callEv.text = $"{results.callEv} EV";
-        if (2 * (int)game.Players[0].LastAction().Money == results.reraiseAmount)
-        {
+        if (2 * (int)game.Players[0].LastAction().Money == results.reraiseAmount) {
             reraiseEv.text = results.reraiseEv + " EV";
             reraiseAmount.text = "($" + results.reraiseAmount + ")";
         }
-        else
-        {
+        else {
             reraiseEv.text = (gameSettings.userStartingMoney < 2 * game.Players[0].LastAction().Money ? "N/A" : "0 -> " + results.reraiseEv + " EV");
-            if (results.reraiseEv == 0)
-            {
+            if (results.reraiseEv == 0) {
                 reraiseEv.text = (gameSettings.userStartingMoney < 2 * game.Players[0].LastAction().Money ? "N/A" : "0" + " EV");
             }
             reraiseAmount.text = $"(${2 * (int)game.Players[0].LastAction().Money} -> ${results.reraiseAmount})";
@@ -135,13 +139,11 @@ public class ResultsManager : MonoBehaviour
 
     public void Retry()
     {
-        foreach (Transform t in communityCards)
-        {
+        foreach (Transform t in communityCards) {
             Destroy(t.gameObject);
         }
 
-        foreach (Transform t in userHand)
-        {
+        foreach (Transform t in userHand) {
             Destroy(t.gameObject);
         }
         GameManager.instance.ResetGame();
@@ -151,13 +153,11 @@ public class ResultsManager : MonoBehaviour
 
     public void Continue()
     {
-        foreach (Transform t in communityCards)
-        {
+        foreach (Transform t in communityCards) {
             Destroy(t.gameObject);
         }
 
-        foreach (Transform t in userHand)
-        {
+        foreach (Transform t in userHand) {
             Destroy(t.gameObject);
         }
         GameManager.instance.PreInitialization();

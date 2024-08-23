@@ -10,9 +10,9 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b49d82995841e4e71914bf3ac3d8f0a5, type: 3}
-  m_Name: StraightDraw
+  m_Name: FlushDrawPair
   m_EditorClassIdentifier: 
-  settingsName: Open-Ended Straight Draw
+  settingsName: Flush Draw + Bottom Pair
   userPosition: 1
   randomUserHand: 0
   userHandSuited: 0
@@ -20,11 +20,11 @@ MonoBehaviour:
   userStartingMoney: 800
   enableCustomUserHand: 0
   customUserHand:
-  - _suit: 0
-    _rank: 5
+  - _suit: 1
+    _rank: 4
     _visible: 0
-  - _suit: 2
-    _rank: 0
+  - _suit: 1
+    _rank: 2
     _visible: 0
   numberOfPlayers: 1
   randomPlayerHand: 1
@@ -47,16 +47,16 @@ MonoBehaviour:
   communityCardSize: 4
   enableCustomCommunityCards: 0
   customCommunityCards:
-  - _suit: 2
+  - _suit: 1
     _rank: 6
     _visible: 1
-  - _suit: 3
-    _rank: 7
-    _visible: 1
   - _suit: 1
-    _rank: 2
-    _visible: 1
-  - _suit: 3
     _rank: 8
     _visible: 1
-  scenario: 3
+  - _suit: 3
+    _rank: 4
+    _visible: 1
+  - _suit: 0
+    _rank: 10
+    _visible: 1
+  scenario: 9

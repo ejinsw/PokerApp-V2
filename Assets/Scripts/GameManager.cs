@@ -16,12 +16,10 @@ public class GameManager : MonoBehaviour
 
     private void Awake()
     {
-        if (instance == null)
-        {
+        if (instance == null) {
             instance = this;
         }
-        else
-        {
+        else {
             Debug.LogError("Multiple instances of GameManager found!");
             Destroy(gameObject);
         }
@@ -60,7 +58,7 @@ public class GameManager : MonoBehaviour
     [SerializeField] private Transform communityCardsTransform;
 
     [SerializeField] List<GameObject> disabledButtons;
-    
+
     [SerializeField] private Button foldButton;
     [SerializeField] private Button checkButton;
     [SerializeField] private Button callButton;
@@ -143,13 +141,11 @@ public class GameManager : MonoBehaviour
 
     public void ResetGame()
     {
-        foreach (Transform t in communityCardsTransform)
-        {
+        foreach (Transform t in communityCardsTransform) {
             Destroy(t.gameObject);
         }
-        
-        foreach (PlayerComponent p in playerComponents.Values)
-        {
+
+        foreach (PlayerComponent p in playerComponents.Values) {
             Destroy(p.gameObject);
         }
 
@@ -159,7 +155,7 @@ public class GameManager : MonoBehaviour
     public void PreInitialization()
     {
         ResetGame();
-        
+
         selectedGameSettings = gameSettings[Utilities.RandomInt(0, gameSettings.Count - 1)];
         Debug.Log($"Initializing {selectedGameSettings.settingsName}");
         Initialize(selectedGameSettings);
@@ -174,8 +170,18 @@ public class GameManager : MonoBehaviour
         List<Player> players = new();
 
         int attempts = 0;
-        for (attempts = 0; !(bluffCases.Contains(scenario) && bluffCases.Count == 1) && attempts < 100; attempts++)
-        {
+        for (attempts = 0;
+             !(bluffCases.Contains(scenario) && bluffCases.Count == 1
+                 || scenario == BluffCases.BluffCase.UnderPair && bluffCases.Count == 2
+                 && bluffCases.Contains(BluffCases.BluffCase.UnderPair) && bluffCases.Contains(BluffCases.BluffCase.Pair)
+                 || scenario == BluffCases.BluffCase.OverPair && bluffCases.Count == 2
+                 && bluffCases.Contains(BluffCases.BluffCase.OverPair) && bluffCases.Contains(BluffCases.BluffCase.Pair)
+                 || scenario == BluffCases.BluffCase.StraightDrawPair && bluffCases.Count == 2
+                 && bluffCases.Contains(BluffCases.BluffCase.StraightDraw) && bluffCases.Contains(BluffCases.BluffCase.Pair)
+                 || scenario == BluffCases.BluffCase.FlushDrawPair && bluffCases.Count == 2
+                 && bluffCases.Contains(BluffCases.BluffCase.FlushDraw) && bluffCases.Contains(BluffCases.BluffCase.Pair))
+             && attempts < 200;
+             attempts++) {
             players.Clear();
             deck = Utilities.NewDeck();
             deck.Shuffle();
@@ -184,30 +190,23 @@ public class GameManager : MonoBehaviour
             Utilities.ShowCards(ref communityCards);
             user = new("You", BluffCases.ScenarioP(scenario, ref deck, communityCards), selectedGameSettings.userStartingMoney);
 
-            if (selectedGameSettings.enableCustomPlayerList)
-            {
+            if (selectedGameSettings.enableCustomPlayerList) {
                 players = selectedGameSettings.customPlayerList.Select(player => player.Clone()).ToList();
 
-                foreach (Player p in players)
-                {
-                    if (!p.Cards.Any())
-                    {
+                foreach (Player p in players) {
+                    if (!p.Cards.Any()) {
                         p.Cards = Utilities.DeckTakeTwo(ref deck);
                     }
-                    else if (p.Cards.Count == 1)
-                    {
+                    else if (p.Cards.Count == 1) {
                         p.Cards.AddRange(Utilities.DeckTakeOne(ref deck));
                     }
-                    else
-                    {
+                    else {
                         Utilities.DeckTakeCards(ref deck, p.Cards);
                     }
                 }
             }
-            else
-            {
-                for (int i = 0; i < selectedGameSettings.numberOfPlayers; i++)
-                {
+            else {
+                for (int i = 0; i < selectedGameSettings.numberOfPlayers; i++) {
                     players.Add(new(Utilities.RandomName(), Utilities.DeckTakeTwo(ref deck), selectedGameSettings.playerStartingMoney));
                 }
             }
@@ -215,16 +214,28 @@ public class GameManager : MonoBehaviour
             // Check bluff cases
             bluffCases = BluffCases.GetAllBluffCases(communityCards, user.Cards);
 
-            if (bluffCases.Contains(scenario) && bluffCases.Count == 1)
-            {
+            if (bluffCases.Contains(scenario) && bluffCases.Count == 1
+                || scenario == BluffCases.BluffCase.UnderPair && bluffCases.Count == 2
+                && bluffCases.Contains(BluffCases.BluffCase.UnderPair) && bluffCases.Contains(BluffCases.BluffCase.Pair)
+                || scenario == BluffCases.BluffCase.OverPair && bluffCases.Count == 2
+                && bluffCases.Contains(BluffCases.BluffCase.OverPair) && bluffCases.Contains(BluffCases.BluffCase.Pair)
+                || scenario == BluffCases.BluffCase.StraightDrawPair && bluffCases.Count == 2
+                && bluffCases.Contains(BluffCases.BluffCase.StraightDraw) && bluffCases.Contains(BluffCases.BluffCase.Pair)
+                || scenario == BluffCases.BluffCase.FlushDrawPair && bluffCases.Count == 2
+                && bluffCases.Contains(BluffCases.BluffCase.FlushDraw) && bluffCases.Contains(BluffCases.BluffCase.Pair)) {
                 attempts = 0;
                 break;
+            }
+            else {
+                Debug.LogWarning($"Scenario ({attempts}): " + Enum.GetName(typeof(BluffCases.BluffCase), scenario));
+                foreach (BluffCases.BluffCase b in bluffCases) {
+                    Debug.LogWarning(Enum.GetName(typeof(BluffCases.BluffCase), b));
+                }
             }
         }
 
         // Fallback
-        if (attempts >= 100)
-        {
+        if (attempts >= 200) {
             Debug.LogWarning("Exceeded 100 attempts to initialize. Using fallback...");
             players.Clear();
             deck = Utilities.NewDeck();
@@ -234,30 +245,23 @@ public class GameManager : MonoBehaviour
             Utilities.ShowCards(ref communityCards);
             user = new("You", Utilities.DeckTakeCards(ref deck, selectedGameSettings.customUserHand), selectedGameSettings.userStartingMoney);
 
-            if (selectedGameSettings.enableCustomPlayerList)
-            {
+            if (selectedGameSettings.enableCustomPlayerList) {
                 players = selectedGameSettings.customPlayerList.Select(player => player.Clone()).ToList();
 
-                foreach (Player p in players)
-                {
-                    if (!p.Cards.Any())
-                    {
+                foreach (Player p in players) {
+                    if (!p.Cards.Any()) {
                         p.Cards = Utilities.DeckTakeTwo(ref deck);
                     }
-                    else if (p.Cards.Count == 1)
-                    {
+                    else if (p.Cards.Count == 1) {
                         p.Cards.AddRange(Utilities.DeckTakeOne(ref deck));
                     }
-                    else
-                    {
+                    else {
                         Utilities.DeckTakeCards(ref deck, p.Cards);
                     }
                 }
             }
-            else
-            {
-                for (int i = 0; i < selectedGameSettings.numberOfPlayers; i++)
-                {
+            else {
+                for (int i = 0; i < selectedGameSettings.numberOfPlayers; i++) {
                     players.Add(new(Utilities.RandomName(), Utilities.DeckTakeTwo(ref deck), selectedGameSettings.playerStartingMoney));
                 }
             }
@@ -275,16 +279,13 @@ public class GameManager : MonoBehaviour
 
         #region Initialize Game
 
-        if (gameSettings.scenario != BluffCases.BluffCase.None)
-        {
+        if (gameSettings.scenario != BluffCases.BluffCase.None) {
             InitializeScenario(gameSettings.scenario);
         }
-        else if (gameSettings.randomGame)
-        {
+        else if (gameSettings.randomGame) {
             game = new(gameSettings.numberOfPlayers);
         }
-        else
-        {
+        else {
             List<Card> deck = Utilities.NewDeck();
             deck.Shuffle();
             List<Card> communityCards = null;
@@ -292,95 +293,73 @@ public class GameManager : MonoBehaviour
             List<Player> players = null;
 
             // Custom Selections First (to prevent duplicates)
-            if (gameSettings.enableCustomCommunityCards)
-            {
+            if (gameSettings.enableCustomCommunityCards) {
                 communityCards = new List<Card>(Utilities.DeckTakeCards(ref deck, gameSettings.customCommunityCards.Select(card => card.Clone()).ToList()));
             }
 
-            if (gameSettings.enableCustomUserHand)
-            {
+            if (gameSettings.enableCustomUserHand) {
                 user = new("You", Utilities.DeckTakeCards(ref deck, gameSettings.customUserHand.Select(card => card.Clone()).ToList()), gameSettings.userStartingMoney);
             }
 
-            if (gameSettings.enableCustomPlayerList)
-            {
+            if (gameSettings.enableCustomPlayerList) {
                 players = gameSettings.customPlayerList.Select(player => player.Clone()).ToList();
 
-                foreach (Player p in players)
-                {
-                    if (!p.Cards.Any())
-                    {
+                foreach (Player p in players) {
+                    if (!p.Cards.Any()) {
                         p.Cards = Utilities.DeckTakeTwo(ref deck);
                     }
-                    else if (p.Cards.Count == 1)
-                    {
+                    else if (p.Cards.Count == 1) {
                         p.Cards.AddRange(Utilities.DeckTakeOne(ref deck));
                     }
-                    else
-                    {
+                    else {
                         Utilities.DeckTakeCards(ref deck, p.Cards);
                     }
                 }
             }
 
             // Community cards
-            if (!gameSettings.enableCustomCommunityCards)
-            {
+            if (!gameSettings.enableCustomCommunityCards) {
                 communityCards = Utilities.DeckTakeAmount(ref deck, Utilities.RandomInt(3, 5));
             }
 
             // User
-            if (!gameSettings.enableCustomUserHand)
-            {
-                if (gameSettings.randomUserHand)
-                {
+            if (!gameSettings.enableCustomUserHand) {
+                if (gameSettings.randomUserHand) {
                     user = new("You", Utilities.DeckTakeTwo(ref deck), gameSettings.userStartingMoney);
                 }
-                else if (gameSettings.userHandPaired)
-                {
+                else if (gameSettings.userHandPaired) {
                     user = new("You", Utilities.HandPaired(ref deck), gameSettings.userStartingMoney);
                     if (user.Cards == null) user.Cards = Utilities.DeckTakeTwo(ref deck);
                 }
-                else if (gameSettings.userHandSuited)
-                {
+                else if (gameSettings.userHandSuited) {
                     user = new("You", Utilities.HandSuited(ref deck), gameSettings.userStartingMoney);
                     if (user.Cards == null) user.Cards = Utilities.DeckTakeTwo(ref deck);
                 }
-                else
-                {
+                else {
                     user = new("You", Utilities.DeckTakeTwo(ref deck), gameSettings.userStartingMoney);
                 }
             }
 
             // Players
-            if (!gameSettings.enableCustomPlayerList)
-            {
+            if (!gameSettings.enableCustomPlayerList) {
                 players = new();
-                if (gameSettings.randomPlayerHand)
-                {
-                    for (int i = 0; i < gameSettings.numberOfPlayers; i++)
-                    {
+                if (gameSettings.randomPlayerHand) {
+                    for (int i = 0; i < gameSettings.numberOfPlayers; i++) {
                         players.Add(new(Utilities.RandomName(), Utilities.DeckTakeTwo(ref deck), gameSettings.playerStartingMoney));
                     }
                 }
-                else if (gameSettings.playerHandPaired)
-                {
-                    for (int i = 0; i < gameSettings.numberOfPlayers; i++)
-                    {
+                else if (gameSettings.playerHandPaired) {
+                    for (int i = 0; i < gameSettings.numberOfPlayers; i++) {
                         players.Add(new(Utilities.RandomName(), Utilities.HandPaired(ref deck), gameSettings.playerStartingMoney));
                     }
                 }
-                else if (gameSettings.playerHandSuited)
-                {
-                    for (int i = 0; i < gameSettings.numberOfPlayers; i++)
-                    {
+                else if (gameSettings.playerHandSuited) {
+                    for (int i = 0; i < gameSettings.numberOfPlayers; i++) {
                         players.Add(new(Utilities.RandomName(), Utilities.HandSuited(ref deck), gameSettings.playerStartingMoney));
                     }
                 }
-                else
-                {
-                    for (int i = 0; i < gameSettings.numberOfPlayers; i++)
-                    {
+                else {
+                    for (int i = 0; i < gameSettings.numberOfPlayers; i++) {
                         players.Add(new(Utilities.RandomName(), Utilities.DeckTakeTwo(ref deck), gameSettings.playerStartingMoney));
                     }
                 }
@@ -392,34 +371,29 @@ public class GameManager : MonoBehaviour
         #endregion
 
         List<BluffCases.BluffCase> bluffCases = BluffCases.GetAllBluffCases(game.CommunityCards, game.User.Cards);
-        foreach (BluffCases.BluffCase b in bluffCases)
-        {
+        foreach (BluffCases.BluffCase b in bluffCases) {
             Debug.Log(Enum.GetName(typeof(BluffCases.BluffCase), b));
         }
 
         #region Initialize Components
 
         // Community Card Components
-        foreach (Card c in game.CommunityCards)
-        {
+        foreach (Card c in game.CommunityCards) {
             CreateCard(c, cardPrefab, communityCardsTransform, 2f);
         }
 
         // Player Components
         int index = 0;
-        foreach (Player p in game.Players)
-        {
-            if (p == game.User)
-            {
+        foreach (Player p in game.Players) {
+            if (p == game.User) {
                 userComponent.Initialize(game.User);
             }
-            else
-            {
+            else {
                 playerComponents.Add(p, CreatePlayer(p, playersTransforms[index]));
                 index++;
             }
         }
-        
+
         ToggleHint(false);
 
         #endregion
@@ -434,8 +408,7 @@ public class GameManager : MonoBehaviour
 
     private IEnumerator GameStart()
     {
-        foreach (Player p in game.Players)
-        {
+        foreach (Player p in game.Players) {
             // TODO: Finish implementing logic for continuous games
             // TODO: DON'T DELETE THIS!
             // if (p.Folded) {
@@ -449,53 +422,46 @@ public class GameManager : MonoBehaviour
             // if (p.LastAction() != null
             //     && game.LastRaiser != null
             //     && p.LastAction().Money == game.LastRaiser.LastAction().Money) continue; // skip ppl who called already
-            
+
             if (p == game.User) {
-                
+
                 yield return StartCoroutine(userComponent.UserTurn());
-                
+
                 userComponent.UpdateUI();
             }
-            else
-            {
+            else {
                 DisableUserButtons(true);
                 #region Null Check
 
-                if (!playerComponents.ContainsKey(p) || playerComponents[p] == null)
-                {
+                if (!playerComponents.ContainsKey(p) || playerComponents[p] == null) {
                     Debug.LogError($"PlayerComponent for player {p.Name} is null in GameStart method.");
                     continue;
                 }
 
                 #endregion
 
-                if (selectedGameSettings.enableCustomPlayerActionLog)
-                {
+                if (selectedGameSettings.enableCustomPlayerActionLog) {
                     PlayerAction action = p.NextAction();
 
 
-                    if (action == null)
-                    {
+                    if (action == null) {
                         yield return StartCoroutine(playerComponents[p].DoTurn());
                     }
-                    else
-                    {
-                        if (action.Money == -1)
-                        {
+                    else {
+                        if (action.Money == -1) {
                             action.Money = Utilities.RandomInt(5, (int)game.Pot, STEP);
                         }
                         yield return StartCoroutine(playerComponents[p].DoTurn(action));
                     }
                 }
-                else
-                {
+                else {
                     yield return StartCoroutine(playerComponents[p].DoTurn());
                 }
                 playerComponents[p].UpdateUI();
             }
 
             potText.text = $"${game.GetPot()}";
-            
+
 
             Debug.Log(p.Name + " " + Enum.GetName(typeof(ActionType), p.LastAction().ActionType) + ": " + p.LastAction().Money);
         }
@@ -513,8 +479,6 @@ public class GameManager : MonoBehaviour
         yield return null;
     }
 
-    
-
     #endregion
 
     #region User Actions
@@ -522,8 +486,7 @@ public class GameManager : MonoBehaviour
     public void ActivateButtons(bool activate)
     {
         long minRaise = 0;
-        if (game.LastRaiser != null && game.LastRaiser.LastAction() != null)
-        {
+        if (game.LastRaiser != null && game.LastRaiser.LastAction() != null) {
             minRaise = game.LastRaiser.LastAction().Money * 2 / STEP;
         }
 
@@ -536,23 +499,18 @@ public class GameManager : MonoBehaviour
         checkButton.gameObject.SetActive(false);
         callButton.gameObject.SetActive(false);
         // raiseButton.gameObject.SetActive(false);
-        if (activate)
-        {
-            if (game.LastRaiser != null && game.LastRaiser != game.User)
-            {
+        if (activate) {
+            if (game.LastRaiser != null && game.LastRaiser != game.User) {
                 // Fold, Call, Raise
                 foldButton.gameObject.SetActive(true);
 
-                if (game.LastRaiser.LastAction().Money >= game.User.Money)
-                {
+                if (game.LastRaiser.LastAction().Money >= game.User.Money) {
                     callButton.GetComponentInChildren<TMP_Text>().text = "All In";
                 }
-                else
-                {
+                else {
                     callButton.GetComponentInChildren<TMP_Text>().text = $"Call ${game.LastRaiser.LastAction().Money}";
 
-                    if (game.LastRaiser.LastAction().Money * 2 <= game.User.Money)
-                    {
+                    if (game.LastRaiser.LastAction().Money * 2 <= game.User.Money) {
                         raiseButton.gameObject.SetActive(true);
                         raiseSlider.gameObject.SetActive(true);
                         // raiseText.gameObject.SetActive(true);
@@ -561,8 +519,7 @@ public class GameManager : MonoBehaviour
 
                 callButton.gameObject.SetActive(true);
             }
-            else
-            {
+            else {
                 // Check, Raise
                 checkButton.gameObject.SetActive(true);
                 raiseButton.gameObject.SetActive(true);
@@ -592,18 +549,18 @@ public class GameManager : MonoBehaviour
         int handEq = Utilities.HandEquity(selectedGameSettings.scenario, game.CommunityCards.Count);
         int raise = game.LastRaiser != null && game.LastRaiser.LastAction() != null ? (int)game.LastRaiser.LastAction().Money : 0;
         Utilities.Odds potOdds = Utilities.PotOdds((int)game.Pot, raise);
-        
+
         int gcd = Utilities.GCD(potOdds.first, potOdds.second);
         potOdds.first /= gcd != 0 ? gcd : 1;
         potOdds.second /= gcd != 0 ? gcd : 1;
 
         scenarioText.text = selectedGameSettings.settingsName;
         string text = $"Hand Equity:\t<b>{handEq}%</b>\nPot Odds:\t\t<b>{potOdds.first}:{potOdds.second}</b>\n";
-        
+
         hintObject.SetActive(toggle ? !hintObject.activeInHierarchy : false);
-        if (toggle) StartCoroutine(popup.Activate(new Vector2(446, 819), text, false, false));
+        if (toggle) StartCoroutine(popup.Activate(text));
     }
-    
+
     public void UserAction(ActionType action)
     {
         userAction = action;
