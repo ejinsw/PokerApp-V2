@@ -227,6 +227,10 @@ MonoBehaviour:
   background: {fileID: 3145779708956505430}
   rank: {fileID: 3905218770414122981}
   suit: {fileID: 6081753333538198747}
+  IconClubs: {fileID: 21300000, guid: bf9b5f20abb2b4be3818388d4076e819, type: 3}
+  IconDiamonds: {fileID: 21300000, guid: 2dbc674925de84b5ca62b89d96117ad3, type: 3}
+  IconHearts: {fileID: 21300000, guid: f54e22c52c22c4852b2c53eee8ed4249, type: 3}
+  IconSpades: {fileID: 21300000, guid: 7bcc9d736d5ea41a68cf34c11ea169d3, type: 3}
 --- !u!1 &2038826555321359020
 GameObject:
   m_ObjectHideFlags: 0

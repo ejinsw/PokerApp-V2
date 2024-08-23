@@ -11,6 +11,11 @@ public class CardComponent : MonoBehaviour {
     [SerializeField] private TMP_Text rank;
     [SerializeField] private Image suit;
 
+    [SerializeField] Sprite IconClubs;
+    [SerializeField] Sprite IconDiamonds;
+    [SerializeField] Sprite IconHearts;
+    [SerializeField] Sprite IconSpades;
+
     public void Initialize(Card c) {
         Card = c;
         
@@ -18,22 +23,22 @@ public class CardComponent : MonoBehaviour {
         
         switch (c.Suit) {
             case Suit.Clubs:
-                suit.sprite = GameManager.instance.IconClubs;
+                suit.sprite = IconClubs;
                 suit.color = Color.black;
                 rank.color = Color.black;
                 break;
             case Suit.Diamonds:
-                suit.sprite = GameManager.instance.IconDiamonds;
+                suit.sprite = IconDiamonds;
                 suit.color = Color.red;
                 rank.color = Color.red;
                 break;
             case Suit.Hearts:
-                suit.sprite = GameManager.instance.IconHearts;
+                suit.sprite = IconHearts;
                 suit.color = Color.red;
                 rank.color = Color.red;
                 break;
             case Suit.Spades:
-                suit.sprite = GameManager.instance.IconSpades;
+                suit.sprite = IconSpades;
                 suit.color = Color.black;
                 rank.color = Color.black;
                 break;
