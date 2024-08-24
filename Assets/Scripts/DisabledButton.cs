@@ -15,7 +15,10 @@ public class DisabledButton : MonoBehaviour
 
     void OnDisable()
     {
-        if (coroutine != null) StopCoroutine(coroutine);
+        if (coroutine != null) {
+            StopCoroutine(coroutine);
+            coroutine = null;
+        }
     }
 
     IEnumerator TypeText()

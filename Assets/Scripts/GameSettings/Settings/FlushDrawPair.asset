@@ -44,7 +44,7 @@ MonoBehaviour:
   enableCustomPlayerActionLog: 1
   randomGame: 0
   startingPotSize: 100
-  communityCardSize: 4
+  communityCardSize: -1
   enableCustomCommunityCards: 0
   customCommunityCards:
   - _suit: 1

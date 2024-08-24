@@ -82,7 +82,7 @@ public class StartButton : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
 
     void StartGame()
     {
-        SceneManager.LoadScene(1);
+        SceneManager.LoadScene(2);
     }
     
     public void OnPointerDown(PointerEventData eventData)

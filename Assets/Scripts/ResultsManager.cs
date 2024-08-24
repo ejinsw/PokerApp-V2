@@ -62,11 +62,16 @@ public class ResultsManager : MonoBehaviour
     {
         resultsScreen.SetActive(false);
         
-        handEqTip.onClick.AddListener(() => StartCoroutine(popup.Activate("Probability of improving to a winning hand.")));
-        villianFoldEqTip.onClick.AddListener(() => StartCoroutine(popup.Activate("Assuming the villain will not fold.")));
-        potOddsTip.onClick.AddListener(() => StartCoroutine(popup.Activate("The ratio X : Y, where X is the pot size and Y is the villain’s bet, represents the risk (Y) and reward (X) of calling. Your hand equity must exceed X/(X+Y) for a profitable call.")));
-        evTip.onClick.AddListener(() => StartCoroutine(popup.Activate("Expected value of an option is calculated by Win probability * Win amount - Lose probability = * Lose amount. This figure represents what you expect to win/lose from taking this action.")));
-        mdfTip.onClick.AddListener(() => StartCoroutine(popup.Activate("Max fold frequency without giving opponent profitable bluff opportunities.")));
+        handEqTip.onClick.AddListener(() => StartCoroutine(
+            popup.Activate("Probability of improving to a winning hand.")));
+        villianFoldEqTip.onClick.AddListener(() => StartCoroutine(
+            popup.Activate("Assuming the villain will not fold.")));
+        potOddsTip.onClick.AddListener(() => StartCoroutine(
+            popup.Activate("The ratio X : Y, where X is the pot size and Y is the villain’s bet, represents the risk (Y) and reward (X) of calling. Your hand equity must exceed X/(X+Y) for a profitable call.")));
+        evTip.onClick.AddListener(() => StartCoroutine(
+            popup.Activate("Expected value is calculated by Win probability * Win amount - Lose probability * Lose amount. This figure represents what you expect to win/lose from taking this action.")));
+        mdfTip.onClick.AddListener(() => StartCoroutine(
+            popup.Activate("Max fold frequency without giving opponent profitable bluff opportunities.")));
     }
 
     public void InitializeResults(Game game, GameSettings gameSettings)
@@ -108,7 +113,7 @@ public class ResultsManager : MonoBehaviour
         handEquity.text = $"Hand Equity: {handEq}%";
         villainFoldEquity.text = $"Villain Fold Equity: 0";
         villainRaise.text = $"Villain Raise: ${game.Players[0].LastAction().Money}";
-        potOdds.text = $"Pot Odds: {potOddsRatio1}:{potOddsRatio2}";
+        potOdds.text = $"{potOddsRatio1}:{potOddsRatio2} PO";
         if (game.User.LastAction().Money == 0) {
             userAction.text = "Hero Folds";
         }

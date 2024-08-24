@@ -186,7 +186,9 @@ public class GameManager : MonoBehaviour
             deck = Utilities.NewDeck();
             deck.Shuffle();
 
-            communityCards = BluffCases.ScenarioCC(scenario, ref deck, selectedGameSettings.communityCardSize);
+            int ccSize = selectedGameSettings.communityCardSize == -1 ? Utilities.RandomInt(3, 4) : selectedGameSettings.communityCardSize;
+            
+            communityCards = BluffCases.ScenarioCC(scenario, ref deck, ccSize);
             Utilities.ShowCards(ref communityCards);
             user = new("You", BluffCases.ScenarioP(scenario, ref deck, communityCards), selectedGameSettings.userStartingMoney);
 
