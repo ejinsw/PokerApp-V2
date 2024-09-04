@@ -24,19 +24,19 @@ public class RaiseComponent : MonoBehaviour, IPointerDownHandler, IPointerUpHand
     
     public void Initialize()
     {
-        sliderRect.sizeDelta = new Vector2(sliderRect.sizeDelta.x, 40);
-        handleRect.sizeDelta = new Vector2(40, handleRect.sizeDelta.y);
+        sliderRect.sizeDelta = new Vector2(sliderRect.sizeDelta.x, 60);
+        handleRect.sizeDelta = new Vector2(60, handleRect.sizeDelta.y);
     }
 
     public void OnPointerDown(PointerEventData eventData)
     {
-        sliderRect.DOSizeDelta(new Vector2(sliderRect.sizeDelta.x, 60), 0.1f);
-        handleRect.DOSizeDelta(new Vector2(60, handleRect.sizeDelta.y), 0.1f);
+        sliderRect.DOSizeDelta(new Vector2(sliderRect.sizeDelta.x, 80), 0.1f);
+        handleRect.DOSizeDelta(new Vector2(80, handleRect.sizeDelta.y), 0.1f);
     }
 
     public void OnPointerUp(PointerEventData eventData)
     {
-        sliderRect.DOSizeDelta(new Vector2(sliderRect.sizeDelta.x, 40), 0.1f);
-        handleRect.DOSizeDelta(new Vector2(40, handleRect.sizeDelta.y), 0.1f);
+        sliderRect.DOSizeDelta(new Vector2(sliderRect.sizeDelta.x, 60), 0.1f);
+        handleRect.DOSizeDelta(new Vector2(60, handleRect.sizeDelta.y), 0.1f);
     }
 }
