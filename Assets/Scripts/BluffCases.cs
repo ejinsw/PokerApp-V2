@@ -200,12 +200,22 @@ namespace Poker
                 .Select((rank, index) => new { Rank = rank, GroupKey = (int)rank - index })
                 .GroupBy(x => x.GroupKey, x => x.Rank);
 
-            if (neighbors.Count() == 2) {
-                List<Rank> firstGroup = neighbors.First().ToList();
-                List<Rank> secondGroup = neighbors.Last().ToList();
+            if (neighbors.Count() >= 2)
+            {
+                // Iterate over all possible combinations of neighboring groups
+                List<List<Rank>> groups = neighbors.Select(group => group.ToList()).ToList();
 
-                if (IsNeighborRank(firstGroup.Last() + 1, secondGroup.First())) {
-                    return true;
+                // Loop through consecutive groups to check for a gutshot gap
+                for (int i = 0; i < groups.Count - 1; i++)
+                {
+                    List<Rank> currentGroup = groups[i];
+                    List<Rank> nextGroup = groups[i + 1];
+
+                    // If the last rank of the current group and the first rank of the next group are neighbors, it's a gutshot
+                    if (IsNeighborRank(currentGroup.Last() + 1, nextGroup.First()))
+                    {
+                        return true;
+                    }
                 }
             }
 
