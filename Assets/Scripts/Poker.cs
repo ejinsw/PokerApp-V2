@@ -216,6 +216,13 @@ namespace Poker
             return nextAction;
         }
 
+        public PlayerAction CurrAction()
+        {
+            if (next >= ActionLog.Count) return null;
+            PlayerAction nextAction = ActionLog[next];
+            return nextAction;
+        }
+
         public void UseMoney(long amount)
         {
             Money -= amount;

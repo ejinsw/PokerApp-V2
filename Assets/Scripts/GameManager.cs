@@ -75,6 +75,8 @@ public class GameManager : MonoBehaviour
 
     [SerializeField] Popup popup;
 
+    [SerializeField] HistoryManager historyManager;
+
     #endregion
 
     #endregion
@@ -108,6 +110,8 @@ public class GameManager : MonoBehaviour
 
         raiseButton.onClick.RemoveAllListeners();
         raiseButton.onClick.AddListener(() => UserAction(ActionType.Raise));
+        
+        historyManager.gameObject.SetActive(false);
 
         PreInitialization();
     }
@@ -187,7 +191,7 @@ public class GameManager : MonoBehaviour
             deck.Shuffle();
 
             int ccSize = selectedGameSettings.communityCardSize == -1 ? Utilities.RandomInt(3, 4) : selectedGameSettings.communityCardSize;
-            
+
             communityCards = BluffCases.ScenarioCC(scenario, ref deck, ccSize);
             Utilities.ShowCards(ref communityCards);
             user = new("You", BluffCases.ScenarioP(scenario, ref deck, communityCards), selectedGameSettings.userStartingMoney);
@@ -400,6 +404,9 @@ public class GameManager : MonoBehaviour
 
         #endregion
 
+        historyManager.Clear();
+        historyManager.AddHistory("Initial Pot", $"${gameSettings.startingPotSize}");
+
         // Start
         StartCoroutine(GameStart());
     }
@@ -443,7 +450,7 @@ public class GameManager : MonoBehaviour
                 #endregion
 
                 if (selectedGameSettings.enableCustomPlayerActionLog) {
-                    PlayerAction action = p.NextAction();
+                    PlayerAction action = p.CurrAction();
 
 
                     if (action == null) {
@@ -461,6 +468,10 @@ public class GameManager : MonoBehaviour
                 }
                 playerComponents[p].UpdateUI();
             }
+
+            historyManager.AddHistory(p.Name, $"${p.CurrAction().Money}");
+
+            p.NextAction();
 
             potText.text = $"${game.GetPot()}";
 
@@ -563,6 +574,11 @@ public class GameManager : MonoBehaviour
         if (toggle) StartCoroutine(popup.Activate(text));
     }
 
+    public void ToggleHistoryScreen()
+    {
+        historyManager.gameObject.SetActive(!historyManager.gameObject.activeInHierarchy);
+    }
+
     public void UserAction(ActionType action)
     {
         userAction = action;
@@ -570,4 +586,5 @@ public class GameManager : MonoBehaviour
     }
 
     #endregion
+
 }
