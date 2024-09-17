@@ -54,6 +54,10 @@ public class ResultsManager : MonoBehaviour
     [SerializeField] Button evTip;
     [SerializeField] Button mdfTip;
 
+    [SerializeField] TextGroup foldTextGroup;
+    [SerializeField] TextGroup callTextGroup;
+    [SerializeField] TextGroup raiseTextGroup;
+
     #endregion
 
     #endregion
@@ -61,7 +65,7 @@ public class ResultsManager : MonoBehaviour
     private void Start()
     {
         resultsScreen.SetActive(false);
-        
+
         handEqTip.onClick.AddListener(() => StartCoroutine(
             popup.Activate("Probability of improving to a winning hand.")));
         villianFoldEqTip.onClick.AddListener(() => StartCoroutine(
@@ -123,6 +127,25 @@ public class ResultsManager : MonoBehaviour
         else {
             userAction.text = $"Hero Re{Enum.GetName(typeof(ActionType), game.User.LastAction().ActionType)}: ${game.User.LastAction().Money}";
         }
+        int maxEv = Math.Max(0, Math.Max(results.callEv, results.reraiseEv));
+        int minEv = Math.Min(0, Math.Min(results.callEv, results.reraiseEv));
+
+        int[] colorCutoffs = { minEv, minEv + (maxEv - minEv / 2), maxEv };
+
+        if (actionEV < colorCutoffs[0] + 10) {
+            userAction.color = Color.red;
+            userEv.color = Color.red;
+        }
+        else if (colorCutoffs[2] - 10 <= actionEV) {
+            userAction.color = new Color(111f / 255f, 229f / 255f, 111f / 255f);
+            userEv.color = new Color(111f / 255f, 229f / 255f, 111f / 255f);
+        }
+        else {
+            userAction.color = new Color(255f / 255f, 200f / 255f, 0f / 255f);
+            userEv.color = new Color(255f / 255f, 200f / 255f, 0f / 255f);
+        }
+
+
         userEv.text = $"{actionEV} EV";
         foldEv.text = $"0 EV";
         callEv.text = $"{results.callEv} EV";
@@ -139,6 +162,23 @@ public class ResultsManager : MonoBehaviour
         }
         foldAmount.text = $"({Math.Round(100 * (game.Pot / (double)(game.Pot + game.Players[0].LastAction().Money)))}% MDF)";
         callAmount.text = $"(${game.Players[0].LastAction().Money})";
+
+        if (0 > results.callEv && 0 > results.reraiseEv) {
+            foldTextGroup.SetColor(new Color(111f / 255f, 229f / 255f, 111f / 255f));
+            callTextGroup.SetColor(Color.white);
+            raiseTextGroup.SetColor(Color.white);
+        }
+        else if (results.callEv > 0 && results.callEv > results.reraiseEv) {
+            callTextGroup.SetColor(new Color(111f / 255f, 229f / 255f, 111f / 255f));
+            foldTextGroup.SetColor(Color.white);
+            raiseTextGroup.SetColor(Color.white);
+        }
+        else if (results.reraiseEv > 0 && results.reraiseEv > results.callEv) {
+            raiseTextGroup.SetColor(new Color(111f / 255f, 229f / 255f, 111f / 255f));
+            callTextGroup.SetColor(Color.white);
+            foldTextGroup.SetColor(Color.white);
+        }
+
         resultsScreen.SetActive(true);
     }
 
