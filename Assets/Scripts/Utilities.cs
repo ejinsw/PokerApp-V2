@@ -338,7 +338,7 @@ namespace Poker
                 {
                     reraiseAmount = raise * 2;
                 }
-                int raiseEV = (int)Math.Round(equityFactor * (pot + reraiseAmount * 2) - reraiseAmount);
+                int raiseEV = (int)Math.Round(equityFactor * (pot + reraiseAmount * 2) - reraiseAmount); //x-intercept
                 result.reraiseEv = raiseEV;
                 result.reraiseAmount = (int)Math.Round(reraiseAmount);
                 return result;
