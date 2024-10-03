@@ -168,7 +168,7 @@ public class ResultsManager : MonoBehaviour
         }
         else
         {
-            reraiseEv.text = (gameSettings.userStartingMoney < 2 * game.Players[0].LastAction().Money ? "N/A" : results.reraiseEv + " EV");
+            reraiseEv.text = (gameSettings.userStartingMoney < 2 * game.Players[0].LastAction().Money ? "N/A" : "0 -> " + results.reraiseEv + " EV");
             if (results.reraiseEv == 0)
             {
                 reraiseEv.text = (gameSettings.userStartingMoney < 2 * game.Players[0].LastAction().Money ? "N/A" : "0" + " EV");
